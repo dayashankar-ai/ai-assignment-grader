@@ -87,13 +87,13 @@ jobs:
             );
             
             if (studentIssues.length > 5) {
-              core.setFailed(`Rate limit exceeded: ${studentId} has submitted ${studentIssues.length} times in the last 24 hours. Maximum is 5.`);
+              core.setFailed('Rate limit exceeded: ' + studentId + ' has submitted ' + studentIssues.length + ' times in the last 24 hours. Maximum is 5.');
               
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                body: `❌ **Submission Rejected: Rate Limit Exceeded**\n\nYou have exceeded the maximum number of submissions (5) allowed within 24 hours.\n\nPlease wait before submitting again.\n\nCurrent submissions in last 24h: ${studentIssues.length}`
+                body: '❌ **Submission Rejected: Rate Limit Exceeded**\n\nYou have exceeded the maximum number of submissions (5) allowed within 24 hours.\n\nPlease wait before submitting again.\n\nCurrent submissions in last 24h: ' + studentIssues.length
               });
               
               await github.rest.issues.update({
@@ -166,7 +166,7 @@ jobs:
               
               // Validate file size
               if (submissionData.submissionContent.length > parseInt(process.env.MAX_FILE_SIZE)) {
-                throw new Error(`Submission exceeds maximum size of ${process.env.MAX_FILE_SIZE} bytes`);
+                throw new Error('Submission exceeds maximum size of ' + process.env.MAX_FILE_SIZE + ' bytes');
               }
               
             } 
@@ -220,7 +220,7 @@ jobs:
             
             for (const pattern of maliciousPatterns) {
               if (pattern.test(submissionData.submissionContent)) {
-                console.warn(`Potential malicious content detected: ${pattern}`);
+                console.warn('Potential malicious content detected: ' + pattern);
                 // Log but don't fail - let instructor review
               }
             }
@@ -235,12 +235,12 @@ jobs:
             core.exportVariable('ISSUE_NUMBER', submissionData.issueNumber || '0');
             
             // Write submission to file with sanitized filename
-            const sanitizedFilename = `submission_${submissionData.rollNumber}_${Date.now()}.txt`;
+            const sanitizedFilename = 'submission_' + submissionData.rollNumber + '_' + Date.now() + '.txt';
             fs.writeFileSync(sanitizedFilename, submissionData.submissionContent);
             core.exportVariable('SUBMISSION_FILE', sanitizedFilename);
             
-            console.log(`✅ Valid submission from ${submissionData.studentName} (${submissionData.rollNumber})`);
-            console.log(`📝 Practical ${submissionData.practicalNumber}`);
+            console.log('✅ Valid submission from ' + submissionData.studentName + ' (' + submissionData.rollNumber + ')');
+            console.log('📝 Practical ' + submissionData.practicalNumber);
             core.setOutput('is_submission', 'true');
             
             return submissionData;
@@ -446,48 +446,31 @@ jobs:
             ].join('\n');
             
             // Build comment body
-            const comment = `
-# 📊 Grading Results
-
-## Final Score: ${gradeData.finalScore}/100 (Grade: ${gradeData.gradeLetter})
-
-### Score Breakdown
-| Metric | Value |
-|--------|-------|
-| **Base Score** | ${gradeData.baseScore}/100 |
-| **AI Penalty** | ${gradeData.aiPenalty} points |
-| **Final Score** | ${gradeData.finalScore}/100 |
-
----
-
-## 🤖 AI Usage Analysis
-
-${aiEmoji} **AI Content Detected: ${aiPercent}%** ${aiColor}
-
-**Status:** ${aiStatus}
-
-${gradeData.aiUsageNotes || ''}
-
----
-
-## 📝 Detailed Feedback
-
-### ✅ Strengths
-${strengthsList || 'No specific strengths listed.'}
-
-### 📈 Areas for Improvement
-${improvementsList || 'No specific improvements listed.'}
-
-### 💬 Overall Feedback
-${gradeData.overallFeedback || 'No overall feedback provided.'}
-
----
-
-## 🔍 Technical Assessment
-
-${techText}
-
-${gradeData.learningEvidence ? `\n**Learning Evidence:** ${gradeData.learningEvidence}\n` : ''}
+            const comment = '# 📊 Grading Results\n\n' +
+              '## Final Score: ' + gradeData.finalScore + '/100 (Grade: ' + gradeData.gradeLetter + ')\n\n' +
+              '### Score Breakdown\n' +
+              '| Metric | Value |\n' +
+              '|--------|-------|\n' +
+              '| **Base Score** | ' + gradeData.baseScore + '/100 |\n' +
+              '| **AI Penalty** | ' + gradeData.aiPenalty + ' points |\n' +
+              '| **Final Score** | ' + gradeData.finalScore + '/100 |\n\n' +
+              '---\n\n' +
+              '## 🤖 AI Usage Analysis\n\n' +
+              aiEmoji + ' **AI Content Detected: ' + aiPercent + '%** ' + aiColor + '\n\n' +
+              '**Status:** ' + aiStatus + '\n\n' +
+              (gradeData.aiUsageNotes || '') + '\n\n' +
+              '---\n\n' +
+              '## 📝 Detailed Feedback\n\n' +
+              '### ✅ Strengths\n' +
+              (strengthsList || 'No specific strengths listed.') + '\n\n' +
+              '### 📈 Areas for Improvement\n' +
+              (improvementsList || 'No specific improvements listed.') + '\n\n' +
+              '### 💬 Overall Feedback\n' +
+              (gradeData.overallFeedback || 'No overall feedback provided.') + '\n\n' +
+              '---\n\n' +
+              '## 🔍 Technical Assessment\n\n' +
+              techText + '\n\n' +
+              (gradeData.learningEvidence ? '\n**Learning Evidence:** ' + gradeData.learningEvidence + '\n' : '');
 
 ---
 
@@ -509,23 +492,21 @@ Your submission has been flagged for high AI usage (${aiPercent}%). Your instruc
 ` : ''}
 
 ${aiPercent > 80 ? `
-## 🚨 Academic Integrity Violation
-
-Your submission shows ${aiPercent}% AI-generated content, which violates academic integrity policies. Your score has been set to 0, and this case will be reviewed by your instructor.
-` : ''}
-
----
-
-*Graded automatically by AI Assignment Auto-Grader*
-*Timestamp: ${new Date().toISOString()}*
-            `.trim();
+            const violationText = aiPercent > 80 ? 
+              '\n\n## \ud83d\udea8 Academic Integrity Violation\n\n' +
+              'Your submission shows ' + aiPercent + '% AI-generated content, which violates academic integrity policies. Your score has been set to 0, and this case will be reviewed by your instructor.\n' : '';
+            
+            const fullComment = comment + violationText + 
+              '\n\n---\n\n' +
+              '*Graded automatically by AI Assignment Auto-Grader*\n' +
+              '*Timestamp: ' + new Date().toISOString() + '*';
             
             // Post comment
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: parseInt(process.env.ISSUE_NUMBER),
-              body: comment
+              body: fullComment
             });
             
             // Add labels
@@ -563,19 +544,14 @@ Your submission shows ${aiPercent}% AI-generated content, which violates academi
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: parseInt(process.env.ISSUE_NUMBER),
-                body: `
-❌ **Grading Failed**
-
-We encountered an error while processing your submission. This has been logged and your instructor will review it manually.
-
-**Error Details:**
-- Student: ${process.env.STUDENT_NAME}
-- Roll Number: ${process.env.ROLL_NUMBER}
-- Practical: ${process.env.PRACTICAL_NUMBER}
-- Timestamp: ${new Date().toISOString()}
-
-Please contact your instructor if this issue persists.
-                `.trim()
+                body: '\u274c **Grading Failed**\n\n' +
+                  'We encountered an error while processing your submission. This has been logged and your instructor will review it manually.\n\n' +
+                  '**Error Details:**\n' +
+                  '- Student: ' + process.env.STUDENT_NAME + '\n' +
+                  '- Roll Number: ' + process.env.ROLL_NUMBER + '\n' +
+                  '- Practical: ' + process.env.PRACTICAL_NUMBER + '\n' +
+                  '- Timestamp: ' + new Date().toISOString() + '\n\n' +
+                  'Please contact your instructor if this issue persists.'
               });
               
               await github.rest.issues.addLabels({
@@ -675,7 +651,7 @@ Please contact your instructor if this issue persists.
             // Build learning evidence
             let learningText = '';
             if (gradeResult.learningEvidence) {
-              learningText = `\n**Learning Evidence:** ${gradeResult.learningEvidence}\n`;
+              learningText = '\n**Learning Evidence:** ' + gradeResult.learningEvidence + '\n';
             }
             
             // Build flagged sections
@@ -683,9 +659,9 @@ Please contact your instructor if this issue persists.
             if (aiResult.flaggedSections && aiResult.flaggedSections.length > 0) {
               flaggedSectionsText = '\n#### 🚩 Flagged Sections:\n';
               aiResult.flaggedSections.forEach(section => {
-                flaggedSectionsText += `- **Lines ${section.lines}**: ${section.reason}\n`;
+                flaggedSectionsText += '- **Lines ' + section.lines + '**: ' + section.reason + '\n';
                 if (section.severity) {
-                  flaggedSectionsText += `  - Severity: ${section.severity}\n`;
+                  flaggedSectionsText += '  - Severity: ' + section.severity + '\n';
                 }
               });
             }
@@ -695,7 +671,7 @@ Please contact your instructor if this issue persists.
             if (aiResult.humanElements && aiResult.humanElements.length > 0) {
               humanElementsText = '\n#### ✓ Human Elements:\n';
               aiResult.humanElements.forEach(element => {
-                humanElementsText += `- **Lines ${element.lines}**: ${element.reason}\n`;
+                humanElementsText += '- **Lines ' + element.lines + '**: ' + element.reason + '\n';
               });
             }
             
@@ -705,66 +681,51 @@ Please contact your instructor if this issue persists.
               if (aiResult.indicators.aiIndicators && aiResult.indicators.aiIndicators.length > 0) {
                 indicatorsText += '\n**AI Indicators:**\n';
                 aiResult.indicators.aiIndicators.slice(0, 5).forEach(ind => {
-                  indicatorsText += `- ${ind}\n`;
+                  indicatorsText += '- ' + ind + '\n';
                 });
               }
               if (aiResult.indicators.humanIndicators && aiResult.indicators.humanIndicators.length > 0) {
                 indicatorsText += '\n**Human Indicators:**\n';
                 aiResult.indicators.humanIndicators.slice(0, 5).forEach(ind => {
-                  indicatorsText += `- ${ind}\n`;
+                  indicatorsText += '- ' + ind + '\n';
                 });
               }
             }
             
-            const comment = `## ${gradeEmoji} Grading Results
-            
-**Student:** ${process.env.STUDENT_NAME}
-**Student ID:** ${process.env.STUDENT_ID}
-**Practical:** ${process.env.PRACTICAL_NUMBER}
-
----
-
-### 📊 Grade Summary
-${scoreDisplay}
-**Grade Letter:** ${gradeResult.gradeLetter || 'N/A'}
-
-${gradeResult.aiUsageNotes ? `\n${gradeResult.aiUsageNotes}\n` : ''}
-
-### 🤖 AI Detection Analysis
-${aiStatusIcon} **${aiStatusText}**
-- **AI Probability:** ${aiProb}%
-- **Confidence:** ${aiResult.confidence || 'medium'}
-- **Recommendation:** ${aiRecommendation}
-${flaggedSectionsText}${humanElementsText}${indicatorsText}
-
-${aiResult.reasoning ? `**Detection Reasoning:** ${aiResult.reasoning}\n` : ''}
-${technicalText}${learningText}
-
----
-
-### 📋 Grading Breakdown
-${gradeResult.criteria.map(c => {
-  let criterionText = `#### ${c.name}: ${c.score}/${c.maxScore}\n${c.feedback}`;
-  if (c.strengths) criterionText += `\n- ✓ **Strengths:** ${c.strengths}`;
-  if (c.improvements) criterionText += `\n- ⚠️ **Improvements:** ${c.improvements}`;
-  return criterionText;
-}).join('\n\n')}
-
-### 💬 Overall Feedback
-${gradeResult.overallFeedback}
-
-${gradeResult.strengths && gradeResult.strengths.length > 0 ? `\n**✓ Strengths:**\n${gradeResult.strengths.map(s => `- ${s}`).join('\n')}\n` : ''}
-${gradeResult.improvements && gradeResult.improvements.length > 0 ? `\n**⚠️ Areas for Improvement:**\n${gradeResult.improvements.map(i => `- ${i}`).join('\n')}\n` : ''}
-
----
-
-${aiRecommendation === 'FAIL' || (gradeResult.aiPenaltyInfo && gradeResult.aiPenaltyInfo.requiresReview) ? '🚨 **URGENT: This submission requires immediate instructor review due to high AI content detection.**\n\n' : ''}
-${aiRecommendation === 'REVIEW' ? '⚠️ **This submission requires instructor review due to moderate AI detection results.**\n\n' : ''}
-
-*This is an automated grading with LLM-judge (Claude 3.5 Sonnet). If you believe there's an error, please contact your instructor.*
-
-📊 [View Full Dashboard](../../instructor.html)
-`;
+            const comment = '## ' + gradeEmoji + ' Grading Results\n\n' +
+              '**Student:** ' + process.env.STUDENT_NAME + '\n' +
+              '**Student ID:** ' + process.env.STUDENT_ID + '\n' +
+              '**Practical:** ' + process.env.PRACTICAL_NUMBER + '\n\n' +
+              '---\n\n' +
+              '### 📊 Grade Summary\n' +
+              scoreDisplay + '\n' +
+              '**Grade Letter:** ' + (gradeResult.gradeLetter || 'N/A') + '\n\n' +
+              (gradeResult.aiUsageNotes ? '\n' + gradeResult.aiUsageNotes + '\n' : '') + '\n' +
+              '### 🤖 AI Detection Analysis\n' +
+              aiStatusIcon + ' **' + aiStatusText + '**\n' +
+              '- **AI Probability:** ' + aiProb + '%\n' +
+              '- **Confidence:** ' + (aiResult.confidence || 'medium') + '\n' +
+              '- **Recommendation:** ' + aiRecommendation + '\n' +
+              flaggedSectionsText + humanElementsText + indicatorsText + '\n\n' +
+              (aiResult.reasoning ? '**Detection Reasoning:** ' + aiResult.reasoning + '\n' : '') +
+              technicalText + learningText + '\n\n' +
+              '---\n\n' +
+              '### 📋 Grading Breakdown\n' +
+              gradeResult.criteria.map(c => {
+                let criterionText = '#### ' + c.name + ': ' + c.score + '/' + c.maxScore + '\n' + c.feedback;
+                if (c.strengths) criterionText += '\n- ✓ **Strengths:** ' + c.strengths;
+                if (c.improvements) criterionText += '\n- ⚠️ **Improvements:** ' + c.improvements;
+                return criterionText;
+              }).join('\n\n') + '\n\n' +
+              '### 💬 Overall Feedback\n' +
+              gradeResult.overallFeedback + '\n\n' +
+              (gradeResult.strengths && gradeResult.strengths.length > 0 ? '\n**✓ Strengths:**\n' + gradeResult.strengths.map(s => '- ' + s).join('\n') + '\n' : '') +
+              (gradeResult.improvements && gradeResult.improvements.length > 0 ? '\n**⚠️ Areas for Improvement:**\n' + gradeResult.improvements.map(i => '- ' + i).join('\n') + '\n' : '') + '\n' +
+              '---\n\n' +
+              (aiRecommendation === 'FAIL' || (gradeResult.aiPenaltyInfo && gradeResult.aiPenaltyInfo.requiresReview) ? '🚨 **URGENT: This submission requires immediate instructor review due to high AI content detection.**\n\n' : '') +
+              (aiRecommendation === 'REVIEW' ? '⚠️ **This submission requires instructor review due to moderate AI detection results.**\n\n' : '') +
+              '*This is an automated grading with LLM-judge (Claude 3.5 Sonnet). If you believe there is an error, please contact your instructor.*\n\n' +
+              '📊 [View Full Dashboard](../../instructor.html)';
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
