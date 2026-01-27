@@ -438,12 +438,12 @@ jobs:
             
             // Build technical assessment
             const techAssessment = gradeData.technicalAssessment || {};
-            const techText = `
-**Correctness:** ${techAssessment.correctness || 'N/A'}
-**Code Quality:** ${techAssessment.codeQuality || 'N/A'}
-**Concept Understanding:** ${techAssessment.conceptUnderstanding || 'N/A'}
-**Completeness:** ${techAssessment.completeness || 'N/A'}
-            `.trim();
+            const techText = [
+              '**Correctness:** ' + (techAssessment.correctness || 'N/A'),
+              '**Code Quality:** ' + (techAssessment.codeQuality || 'N/A'),
+              '**Concept Understanding:** ' + (techAssessment.conceptUnderstanding || 'N/A'),
+              '**Completeness:** ' + (techAssessment.completeness || 'N/A')
+            ].join('\n');
             
             // Build comment body
             const comment = `
