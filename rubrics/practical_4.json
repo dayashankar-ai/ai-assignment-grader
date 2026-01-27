@@ -1,0 +1,135 @@
+{
+  "assignmentNumber": 4,
+  "title": "LLM Evaluation + GAN Implementation",
+  "description": "Model evaluation metrics, benchmarking, GAN architecture, and generative model training",
+  "lectures": "Lectures 10-12",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 35,
+      "description": "Accurate evaluation metrics, functional GAN implementation, proper training loop.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "All evaluation metrics correctly implemented. GAN trains successfully and generates realistic outputs. Training stability achieved."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Most metrics work correctly. GAN produces reasonable outputs. Minor training instability."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic metrics implemented. GAN partially functional. Significant training issues."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Incorrect metrics. GAN fails to train or produces poor outputs. No convergence."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 30,
+      "description": "GAN architecture design, training code organization, metric implementation quality.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Excellent GAN architecture. Clean training loop with proper logging. Modular metric implementations. Good use of PyTorch/TensorFlow best practices."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good GAN structure. Functional training code. Decent metric implementations. Follows most best practices."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic GAN implementation. Training code works but messy. Simple metric implementations."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poor GAN design. Disorganized training code. Broken or missing metrics."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 20,
+      "description": "Evaluation methodology explanation, GAN architecture documentation, training process description.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive evaluation methodology. GAN architecture clearly documented. Training process well-explained with hyperparameters justified."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good evaluation documentation. GAN structure explained. Training process described."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic documentation. Key components explained. Limited training details."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Minimal documentation. Architecture unexplained. No training details."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 15,
+      "description": "Novel evaluation approaches, creative GAN architectures, innovative training techniques.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Innovative evaluation metrics. Creative GAN architecture or training techniques. Novel approaches to stability."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Interesting evaluation approaches. Good GAN variations. Some creative training techniques."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Standard metrics and architecture. Basic training approach. Minimal creativity."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No creativity. Direct copying of tutorial code. No original contributions."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for syntax and boilerplate code",
+      "Stack Overflow for debugging GAN training issues",
+      "PyTorch/TensorFlow documentation and tutorials"
+    ],
+    "prohibited": [
+      "Copy-pasting complete GAN implementations from AI tools",
+      "Using ChatGPT to write entire training loops",
+      "Submitting pre-trained models without actual training"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "AI can help with syntax, but GAN architecture design and training implementation must show your understanding of generative models."
+  },
+  "deliverables": [
+    "Python file (practical4.py) with LLM evaluation metrics implementation",
+    "GAN implementation (generator and discriminator networks)",
+    "Training script with loss tracking and sample generation",
+    "Evaluation report comparing at least 2 LLM outputs using 3+ metrics",
+    "Generated samples from trained GAN model",
+    "README.md explaining architecture choices and training methodology"
+  ],
+  "learningObjectives": [
+    "Implement and understand LLM evaluation metrics (BLEU, ROUGE, perplexity, etc.)",
+    "Design and train a functional GAN architecture",
+    "Handle GAN training instabilities and mode collapse",
+    "Evaluate generative model quality and performance"
+  ]
+}

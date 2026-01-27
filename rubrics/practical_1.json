@@ -1,0 +1,132 @@
+{
+  "assignmentNumber": 1,
+  "title": "Basic Prompt Engineering",
+  "description": "Introduction to prompt design, testing simple prompts, and understanding LLM responses",
+  "lectures": "Lectures 1-3",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 40,
+      "description": "Does the solution work correctly? Are prompts well-structured and producing expected outputs?",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "All prompts produce accurate, relevant responses. Clear understanding of prompt structure. Edge cases handled properly."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Most prompts work correctly. Minor issues in formatting or edge case handling. Good grasp of basic concepts."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Prompts produce partially correct results. Some misunderstanding of prompt engineering principles. Basic functionality achieved."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Prompts fail to produce expected results. Significant errors in understanding. Incomplete or non-functional solution."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 25,
+      "description": "Is the code well-written, readable, and maintainable? Proper use of API calls and error handling.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Clean, well-organized code. Proper variable naming. Excellent error handling. Follows Python best practices."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good code structure. Minor style inconsistencies. Basic error handling present."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Functional but messy code. Inconsistent naming. Minimal error handling."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poorly structured code. No error handling. Hard to read or maintain."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 20,
+      "description": "Is the code properly documented? Clear explanations of prompt design choices.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive README. Well-commented code. Clear explanation of each prompt's purpose and expected behavior."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good documentation. Most prompts explained. Comments present but could be more detailed."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic documentation. Minimal comments. Some prompts lack explanation."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Little to no documentation. No comments. Unclear prompt rationale."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 15,
+      "description": "Does the solution show original thinking? Creative prompt design beyond basic examples.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Innovative prompt designs. Demonstrates deep understanding through creative applications. Goes beyond requirements."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Some creative elements. Shows independent thinking. Meets requirements with good examples."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic creativity. Mostly follows examples from lectures. Minimal original thinking."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No creativity. Direct copying of examples. No original contribution."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for syntax help and code completion",
+      "Stack Overflow for reference and debugging",
+      "Official API documentation for LLM providers"
+    ],
+    "prohibited": [
+      "Copy-pasting entire solutions from ChatGPT or similar tools",
+      "Using AI to write complete prompt engineering solutions",
+      "Submitting AI-generated code without understanding or modification"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "You may use AI tools for syntax help and debugging, but the prompt design and implementation logic must be your own work."
+  },
+  "deliverables": [
+    "Python file (practical1.py) with at least 5 different prompt examples",
+    "README.md explaining your prompt design choices and testing methodology",
+    "Sample outputs demonstrating successful prompt responses"
+  ],
+  "learningObjectives": [
+    "Understand basic prompt structure and components",
+    "Design clear, specific prompts for different tasks",
+    "Test and iterate on prompt designs",
+    "Handle API responses and errors appropriately"
+  ]
+}

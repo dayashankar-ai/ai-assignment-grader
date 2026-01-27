@@ -1,0 +1,138 @@
+{
+  "assignmentNumber": 5,
+  "title": "VAE + Diffusion Models",
+  "description": "Variational autoencoders, latent space manipulation, diffusion model architecture, and denoising processes",
+  "lectures": "Lectures 13-15",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 35,
+      "description": "Functional VAE with proper loss calculation, working diffusion model, successful generation.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "VAE trains correctly with KL divergence and reconstruction loss properly balanced. Diffusion model generates high-quality samples. Latent space shows meaningful structure."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "VAE mostly functional with minor loss issues. Diffusion model produces recognizable outputs. Latent space partially interpretable."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "VAE trains but with imbalanced losses. Diffusion model works partially. Generated samples are poor quality."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "VAE fails to train properly. Diffusion model doesn't work. No successful generation."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 30,
+      "description": "VAE architecture, diffusion model implementation, training loop quality, and code organization.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Excellent VAE encoder-decoder architecture. Well-implemented diffusion process with proper noise scheduling. Clean, modular training code."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good VAE structure. Functional diffusion implementation. Organized training code with minor issues."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic VAE implementation. Simple diffusion model. Training code works but messy."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poor architecture design. Broken diffusion process. Disorganized, hard-to-follow code."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 20,
+      "description": "Architecture explanations, loss function documentation, latent space analysis, generation process description.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive documentation of both models. Loss functions clearly explained. Latent space visualizations and analysis. Diffusion process well-documented."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good model documentation. Loss functions explained. Some latent space analysis. Diffusion process described."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic documentation. Key concepts explained. Limited analysis and visualizations."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Minimal documentation. No analysis. Models unexplained."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 15,
+      "description": "Novel VAE architectures, creative latent space exploration, innovative diffusion techniques.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Creative VAE variations (conditional VAE, β-VAE). Innovative latent space manipulation. Novel diffusion scheduling or conditioning."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Interesting model variations. Good latent space experiments. Creative generation techniques."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Standard implementations. Basic latent space usage. Minimal creativity."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No creativity. Direct copying of tutorials. No experimentation."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for code completion and syntax",
+      "Stack Overflow for debugging training issues",
+      "PyTorch/TensorFlow documentation",
+      "Research papers for architecture reference"
+    ],
+    "prohibited": [
+      "Copy-pasting complete VAE/diffusion implementations",
+      "Using pre-trained models without understanding",
+      "AI-generated architectures without modification"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "AI can assist with syntax and debugging, but model architectures and training strategies must demonstrate deep understanding of VAE and diffusion principles."
+  },
+  "deliverables": [
+    "Python file (practical5.py) with VAE implementation (encoder, decoder, loss)",
+    "Diffusion model implementation with forward and reverse processes",
+    "Training scripts for both models",
+    "Latent space visualization (t-SNE or PCA of VAE latent codes)",
+    "Generated samples from both VAE and diffusion model",
+    "Latent space interpolation examples",
+    "README.md explaining architectures, loss functions, and results analysis"
+  ],
+  "learningObjectives": [
+    "Understand and implement VAE architecture with reparameterization trick",
+    "Balance reconstruction loss and KL divergence in VAE training",
+    "Implement diffusion forward and reverse processes",
+    "Understand noise scheduling in diffusion models",
+    "Explore and manipulate latent spaces for controlled generation"
+  ]
+}

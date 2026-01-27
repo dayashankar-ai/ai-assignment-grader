@@ -1,0 +1,138 @@
+{
+  "assignmentNumber": 6,
+  "title": "Fine-Tuning + RAG System",
+  "description": "LLM fine-tuning, transfer learning, production RAG system with vector database and embeddings",
+  "lectures": "Lectures 16-18",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 40,
+      "description": "Successful fine-tuning with improved metrics, fully functional RAG pipeline, accurate retrieval and generation.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Fine-tuned model shows clear improvement on task. Complete RAG pipeline with vector DB, embeddings, and retrieval. Accurate, context-aware responses."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Fine-tuning shows improvement. RAG system mostly functional. Good retrieval accuracy with minor issues."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Fine-tuning partially successful. RAG pipeline works but has issues. Retrieval accuracy needs improvement."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Fine-tuning fails or no improvement. RAG system broken. Poor retrieval and generation quality."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 25,
+      "description": "Fine-tuning pipeline quality, RAG system architecture, database integration, code organization.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Professional fine-tuning pipeline with proper data handling. Excellent RAG architecture with efficient vector DB queries. Clean API design. Robust error handling."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good fine-tuning implementation. Solid RAG structure. Functional DB integration. Decent error handling."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic fine-tuning code. Simple RAG system. Working DB connection. Minimal error handling."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poor fine-tuning implementation. Messy RAG code. Broken DB integration. No error handling."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 20,
+      "description": "Fine-tuning methodology, RAG architecture documentation, setup instructions, performance analysis.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive fine-tuning documentation with hyperparameters and results. Detailed RAG system architecture. Complete setup instructions. Thorough performance analysis."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good documentation. Fine-tuning process explained. RAG architecture described. Setup instructions provided."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic documentation. Key components explained. Limited setup details."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Minimal documentation. Systems unexplained. No setup instructions."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 15,
+      "description": "Innovative fine-tuning approaches, creative RAG enhancements, novel retrieval strategies.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Creative fine-tuning techniques (LoRA, QLoRA). Innovative RAG features (hybrid search, re-ranking). Novel retrieval or generation strategies."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Interesting fine-tuning experiments. Enhanced RAG features. Good retrieval improvements."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Standard fine-tuning. Basic RAG implementation. Minimal enhancements."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No creativity. Direct copying. No original contributions."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for code completion and boilerplate",
+      "Stack Overflow for vector database queries",
+      "Hugging Face documentation for fine-tuning",
+      "Vector DB documentation (Pinecone, Weaviate, ChromaDB)"
+    ],
+    "prohibited": [
+      "Copy-pasting complete RAG systems from AI tools",
+      "Using pre-fine-tuned models without actual training",
+      "AI-generated fine-tuning scripts without understanding"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "AI assistance for syntax is acceptable, but fine-tuning strategy and RAG architecture must demonstrate your understanding of advanced LLM applications."
+  },
+  "deliverables": [
+    "Python file (practical6.py) with fine-tuning implementation",
+    "RAG system with vector database integration (ChromaDB/Pinecone/FAISS)",
+    "Document ingestion pipeline with chunking and embedding",
+    "Retrieval and generation API with query processing",
+    "Fine-tuning dataset and training logs",
+    "Performance comparison (before/after fine-tuning, RAG vs. non-RAG)",
+    "README.md with setup instructions, architecture diagram, and evaluation results"
+  ],
+  "learningObjectives": [
+    "Fine-tune LLMs using modern techniques (LoRA, PEFT)",
+    "Build production-ready RAG systems with vector databases",
+    "Implement efficient document chunking and embedding strategies",
+    "Design retrieval strategies (semantic search, hybrid search, re-ranking)",
+    "Evaluate and optimize RAG system performance"
+  ]
+}

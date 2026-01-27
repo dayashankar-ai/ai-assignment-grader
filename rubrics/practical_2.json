@@ -1,0 +1,134 @@
+{
+  "assignmentNumber": 2,
+  "title": "Advanced Prompting + Templates",
+  "description": "Complex prompt patterns, template systems, few-shot learning, and prompt chaining",
+  "lectures": "Lectures 4-6",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 35,
+      "description": "Are templates functional and reusable? Do prompt chains work correctly?",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "All templates are fully functional and reusable. Prompt chains execute flawlessly. Few-shot examples are well-chosen and effective."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Templates work well with minor issues. Prompt chains mostly functional. Good few-shot examples provided."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Templates have some functionality issues. Prompt chains work partially. Few-shot examples need improvement."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Templates don't work properly. Prompt chains fail. Poor few-shot example selection."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 30,
+      "description": "Template system design, code modularity, and maintainability.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Excellent template architecture. Modular, reusable components. Clean separation of concerns. Robust error handling."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good template structure. Reasonable modularity. Some code reuse. Adequate error handling."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic template system. Limited modularity. Some repetitive code. Basic error handling."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poor template design. No modularity. Repetitive, hard-to-maintain code. No error handling."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 20,
+      "description": "Template usage documentation, parameter descriptions, and chain explanations.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive template documentation. All parameters clearly explained. Chain logic well-documented. Usage examples provided."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good documentation. Most templates explained. Chain logic documented. Some usage examples."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic documentation. Key templates explained. Limited chain documentation."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Minimal documentation. Templates not explained. No chain documentation."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 15,
+      "description": "Innovative template designs and creative prompt chaining strategies.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Highly creative template system. Innovative chaining strategies. Demonstrates advanced understanding through novel applications."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Creative template designs. Interesting chain implementations. Shows independent problem-solving."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Some creative elements. Standard template approaches. Basic chaining patterns."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No creativity. Direct copying of lecture examples. No original thinking."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for syntax help and code completion",
+      "Stack Overflow for template design patterns",
+      "Official API documentation and prompt engineering guides"
+    ],
+    "prohibited": [
+      "Copy-pasting complete template systems from AI tools",
+      "Using ChatGPT to generate entire prompt chains",
+      "Submitting AI-written code without understanding the template logic"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "AI can assist with syntax and debugging, but template architecture and chaining logic must demonstrate your own understanding."
+  },
+  "deliverables": [
+    "Python file (practical2.py) with template system implementation",
+    "At least 3 reusable prompt templates with different use cases",
+    "2-3 prompt chain examples showing sequential reasoning",
+    "README.md explaining template design and chain architecture",
+    "Test cases demonstrating template functionality"
+  ],
+  "learningObjectives": [
+    "Design reusable prompt template systems",
+    "Implement few-shot learning with effective examples",
+    "Create prompt chains for complex multi-step tasks",
+    "Understand template parameterization and variable substitution"
+  ]
+}

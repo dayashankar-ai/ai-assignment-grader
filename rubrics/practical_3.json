@@ -1,0 +1,134 @@
+{
+  "assignmentNumber": 3,
+  "title": "Temperature Control + RAG Prompting",
+  "description": "LLM parameters (temperature, top-p), retrieval-augmented generation basics, and context injection",
+  "lectures": "Lectures 7-9",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 40,
+      "description": "Proper temperature usage, functional RAG implementation, accurate retrieval and context injection.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Perfect understanding of temperature effects. RAG system retrieves and uses context accurately. All components work together seamlessly."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good temperature control demonstrated. RAG mostly functional. Context injection works well with minor issues."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic temperature usage. RAG partially functional. Context injection needs improvement."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Misunderstanding of temperature parameter. RAG doesn't work properly. Context injection fails."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 25,
+      "description": "RAG system architecture, retrieval logic, and context management code quality.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Excellent RAG architecture. Efficient retrieval implementation. Clean context management. Proper handling of embeddings/vectors."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good RAG structure. Functional retrieval logic. Decent context management. Minor efficiency issues."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic RAG implementation. Retrieval works but inefficient. Simple context handling."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poor RAG design. Inefficient or broken retrieval. No proper context management."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 20,
+      "description": "Explanation of parameter choices, RAG system design, and retrieval strategy.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive documentation. Temperature choices justified. RAG architecture clearly explained. Retrieval strategy well-documented."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good documentation. Most parameters explained. RAG design documented. Retrieval logic described."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic documentation. Some parameter justification. Limited RAG documentation."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Minimal documentation. No parameter justification. RAG system unexplained."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 15,
+      "description": "Creative use of temperature, innovative retrieval strategies, novel context injection approaches.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Innovative temperature experimentation. Creative retrieval strategies. Novel context injection techniques."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Interesting parameter experiments. Good retrieval approach. Creative context usage."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Standard parameter usage. Basic retrieval. Conventional context injection."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No experimentation. Direct copying of examples. No original thinking."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for code completion and syntax",
+      "Stack Overflow for retrieval algorithms and embeddings",
+      "Documentation for vector databases and embedding models"
+    ],
+    "prohibited": [
+      "Using AI to generate complete RAG implementations",
+      "Copy-pasting RAG systems without understanding",
+      "AI-generated retrieval logic without modification"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "Use AI for syntax help, but RAG system design and retrieval strategy must demonstrate your own understanding."
+  },
+  "deliverables": [
+    "Python file (practical3.py) with temperature experiments and RAG implementation",
+    "Comparison showing temperature effects (0.0, 0.5, 1.0, 1.5) on same prompt",
+    "Simple RAG system with document storage and retrieval",
+    "Example queries demonstrating context-aware responses",
+    "README.md explaining parameter choices and RAG architecture"
+  ],
+  "learningObjectives": [
+    "Understand and control LLM temperature and sampling parameters",
+    "Implement basic retrieval-augmented generation",
+    "Manage context injection and prompt construction with retrieved data",
+    "Compare deterministic vs. creative outputs using parameter tuning"
+  ]
+}

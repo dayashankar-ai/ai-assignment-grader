@@ -1,0 +1,148 @@
+{
+  "assignmentNumber": 7,
+  "title": "Ethics Analysis + Safety Implementation",
+  "description": "AI ethics analysis, bias detection, safety measures, content filtering, and responsible AI practices",
+  "lectures": "Lectures 19-20",
+  "totalPoints": 100,
+  "criteria": [
+    {
+      "name": "Correctness",
+      "weight": 30,
+      "description": "Accurate bias detection, functional safety measures, effective content filtering, correct ethical analysis.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive bias detection across multiple dimensions. Robust safety measures with multiple layers. Effective content filtering with high accuracy. Deep ethical analysis with well-reasoned arguments."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good bias detection. Functional safety measures. Working content filters. Solid ethical analysis."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic bias detection. Simple safety measures. Limited content filtering. Surface-level ethical analysis."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Inadequate bias detection. Weak safety measures. Poor content filtering. Superficial ethical analysis."
+        }
+      }
+    },
+    {
+      "name": "Code Quality",
+      "weight": 25,
+      "description": "Safety system architecture, filter implementation quality, bias detection code, system integration.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Professional safety architecture with layered defenses. Clean, maintainable filter implementations. Efficient bias detection algorithms. Well-integrated system components."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good safety system structure. Functional filters. Decent bias detection code. Good integration."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic safety implementation. Simple filters. Working bias detection. Basic integration."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Poor safety design. Broken or ineffective filters. Inadequate bias detection. Poor integration."
+        }
+      }
+    },
+    {
+      "name": "Documentation",
+      "weight": 25,
+      "description": "Ethics analysis depth, safety documentation, test case explanations, policy documentation.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Comprehensive ethics report with multiple perspectives and case studies. Detailed safety documentation with threat models. Extensive test cases with ethical justifications. Clear policy guidelines."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Good ethics analysis. Solid safety documentation. Good test coverage. Clear policies."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Basic ethics discussion. Limited safety documentation. Some test cases. Simple policies."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "Minimal ethics analysis. Poor documentation. Few test cases. No clear policies."
+        }
+      }
+    },
+    {
+      "name": "Creativity",
+      "weight": 20,
+      "description": "Novel ethical insights, innovative safety measures, creative bias detection, thoughtful recommendations.",
+      "levels": {
+        "excellent": {
+          "scoreRange": "90-100",
+          "description": "Deep, original ethical insights. Innovative safety mechanisms. Creative bias detection approaches. Thoughtful, actionable recommendations for responsible AI."
+        },
+        "good": {
+          "scoreRange": "70-89",
+          "description": "Interesting ethical perspectives. Enhanced safety features. Good bias detection strategies. Solid recommendations."
+        },
+        "satisfactory": {
+          "scoreRange": "50-69",
+          "description": "Standard ethical analysis. Basic safety measures. Common bias detection methods. Generic recommendations."
+        },
+        "poor": {
+          "scoreRange": "0-49",
+          "description": "No original thinking. Copy-pasted safety measures. No creative insights. Weak recommendations."
+        }
+      }
+    }
+  ],
+  "aiUsagePolicy": {
+    "allowedTools": [
+      "GitHub Copilot for code syntax and structure",
+      "Stack Overflow for filter implementation patterns",
+      "Research papers and ethical frameworks for reference",
+      "Bias detection libraries and documentation"
+    ],
+    "prohibited": [
+      "Using AI to generate entire ethics essays",
+      "Copy-pasting safety implementations without understanding",
+      "AI-written ethical analysis without critical thinking"
+    ],
+    "penaltyThresholds": {
+      "0-20": 0,
+      "21-40": -10,
+      "41-60": -25,
+      "61-80": -50,
+      "81-100": -100
+    },
+    "guidelines": "AI can help with code structure, but ethical analysis and safety design must demonstrate your own critical thinking and understanding of responsible AI principles."
+  },
+  "deliverables": [
+    "Python file (practical7.py) with safety measures and bias detection implementation",
+    "Content filter system with multiple categories (harmful, biased, toxic, etc.)",
+    "Bias detection module analyzing gender, race, age, and other dimensions",
+    "Safety wrapper for LLM API with input/output filtering",
+    "Ethics analysis report (2000+ words) covering: AI bias, fairness, transparency, privacy, accountability, and societal impact",
+    "Test cases demonstrating safety measures against adversarial inputs",
+    "Policy recommendations document for responsible AI deployment",
+    "README.md with implementation details and ethical considerations"
+  ],
+  "learningObjectives": [
+    "Identify and mitigate biases in AI systems",
+    "Implement multi-layered safety measures for LLM applications",
+    "Design effective content filtering and moderation systems",
+    "Analyze ethical implications of AI deployment",
+    "Develop responsible AI policies and guidelines",
+    "Test systems against adversarial and harmful inputs"
+  ],
+  "evaluationFocus": [
+    "Depth of ethical analysis and critical thinking",
+    "Effectiveness of implemented safety measures",
+    "Accuracy and coverage of bias detection",
+    "Quality of test cases and edge case handling",
+    "Thoughtfulness of policy recommendations",
+    "Understanding of responsible AI principles"
+  ]
+}
