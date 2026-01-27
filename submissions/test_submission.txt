@@ -1,0 +1,13 @@
+**Student Name:** Test Student
+**Student ID:** TEST001
+**Assignment:** Practical 1
+
+## Submission Files
+
+```python
+# test.py
+def hello():
+    print("Hello World")
+
+hello()
+```
