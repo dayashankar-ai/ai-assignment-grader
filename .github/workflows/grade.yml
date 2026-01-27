@@ -3,7 +3,7 @@ name: Auto Grade Assignments
 on:
   # Trigger on form submission via webhook (issue creation)
   issues:
-    types: [opened]
+    types: [opened, reopened]
   
   # Trigger on file commits to submissions/ folder
   push:
