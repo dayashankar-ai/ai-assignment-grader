@@ -1,0 +1,805 @@
+name: Auto Grade Assignments
+
+on:
+  # Trigger on form submission via webhook (issue creation)
+  issues:
+    types: [opened]
+  
+  # Trigger on file commits to submissions/ folder
+  push:
+    paths:
+      - 'submissions/**'
+  
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to grade'
+        required: true
+        type: number
+      student_name:
+        description: 'Student name (optional for file-based submission)'
+        required: false
+        type: string
+
+env:
+  MAX_FILE_SIZE: 10485760  # 10MB in bytes
+  MAX_RETRIES: 3
+  RETRY_DELAY: 5  # seconds
+
+jobs:
+  validate-and-grade:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm ci --prefer-offline --no-audit
+          
+      - name: Check rate limiting
+        id: rate_limit
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            
+            // Extract student ID for rate limiting
+            const idMatch = body.match(/\*\*(?:Student ID|Roll Number):\*\*\s*(.+)/);
+            const studentId = idMatch ? idMatch[1].trim() : null;
+            
+            if (!studentId) {
+              console.log('No student ID found, skipping rate limit check');
+              return;
+            }
+            
+            // Check submissions in last 24 hours
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              since: oneDayAgo.toISOString(),
+              per_page: 100
+            });
+            
+            const studentIssues = issues.data.filter(i => 
+              i.body && i.body.includes(studentId) && 
+              i.created_at > oneDayAgo.toISOString()
+            );
+            
+            if (studentIssues.length > 5) {
+              core.setFailed(`Rate limit exceeded: ${studentId} has submitted ${studentIssues.length} times in the last 24 hours. Maximum is 5.`);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `❌ **Submission Rejected: Rate Limit Exceeded**\n\nYou have exceeded the maximum number of submissions (5) allowed within 24 hours.\n\nPlease wait before submitting again.\n\nCurrent submissions in last 24h: ${studentIssues.length}`
+              });
+              
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                labels: ['rate-limited', 'rejected']
+              });
+              
+              return { exceeded: true };
+            }
+            
+            core.exportVariable('STUDENT_ID', studentId);
+            return { exceeded: false };
+            
+      - name: Extract and validate submission
+        id: extract
+        if: steps.rate_limit.outputs.exceeded != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            let submissionData = {};
+            
+            // Handle issue-based submission
+            if (context.eventName === 'issues' || context.payload.inputs?.issue_number) {
+              const issue = context.payload.issue || await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.inputs?.issue_number || context.issue.number
+              }).then(res => res.data);
+              
+              const body = issue.body || '';
+              const title = issue.title || '';
+              
+              // Validate this is a submission
+              if (!title.toLowerCase().includes('submission') && !body.toLowerCase().includes('submission')) {
+                console.log('Not a submission issue, skipping');
+                core.setOutput('is_submission', 'false');
+                return;
+              }
+              
+              // Extract student information
+              const nameMatch = body.match(/\*\*(?:Student Name|Name):\*\*\s*(.+)/i);
+              const rollMatch = body.match(/\*\*(?:Roll Number|Student ID|ID):\*\*\s*(.+)/i);
+              const batchMatch = body.match(/\*\*Batch:\*\*\s*(.+)/i);
+              const yearMatch = body.match(/\*\*Year:\*\*\s*(.+)/i);
+              const emailMatch = body.match(/\*\*(?:Email|Student Email):\*\*\s*(.+)/i);
+              const practicalMatch = body.match(/\*\*(?:Practical|Assignment)(?:\s+Number)?:\*\*\s*(?:Practical\s*)?(\d+)/i);
+              const submissionMatch = body.match(/\*\*Submission:\*\*\s*```([\s\S]*?)```/i) || 
+                                      body.match(/### Submission Content:\s*```([\s\S]*?)```/i);
+              
+              submissionData = {
+                studentName: nameMatch ? nameMatch[1].trim() : 'Unknown',
+                rollNumber: rollMatch ? rollMatch[1].trim() : 'Unknown',
+                batch: batchMatch ? batchMatch[1].trim() : '2024',
+                year: yearMatch ? yearMatch[1].trim() : 'III',
+                studentEmail: emailMatch ? emailMatch[1].trim() : 'unknown@example.com',
+                practicalNumber: practicalMatch ? practicalMatch[1].trim() : '1',
+                submissionContent: submissionMatch ? submissionMatch[1].trim() : '',
+                issueNumber: issue.number
+              };
+              
+              if (!submissionData.submissionContent) {
+                throw new Error('No submission content found in issue body');
+              }
+              
+              // Validate file size
+              if (submissionData.submissionContent.length > parseInt(process.env.MAX_FILE_SIZE)) {
+                throw new Error(`Submission exceeds maximum size of ${process.env.MAX_FILE_SIZE} bytes`);
+              }
+              
+            } 
+            // Handle file-based submission from push event
+            else if (context.eventName === 'push') {
+              const commits = context.payload.commits || [];
+              const addedFiles = commits.flatMap(c => c.added || []);
+              const submissionFiles = addedFiles.filter(f => f.startsWith('submissions/'));
+              
+              if (submissionFiles.length === 0) {
+                console.log('No submission files found');
+                core.setOutput('is_submission', 'false');
+                return;
+              }
+              
+              // Use first submission file
+              const filePath = submissionFiles[0];
+              const content = fs.readFileSync(filePath, 'utf-8');
+              
+              // Extract metadata from filename or commit message
+              const filename = path.basename(filePath);
+              const match = filename.match(/(\w+)_(\d+)_practical_(\d+)/i);
+              
+              submissionData = {
+                studentName: match ? match[1] : context.payload.pusher?.name || 'Unknown',
+                rollNumber: match ? match[2] : 'Unknown',
+                batch: '2024',
+                year: 'III',
+                studentEmail: context.payload.pusher?.email || 'unknown@example.com',
+                practicalNumber: match ? match[3] : '1',
+                submissionContent: content,
+                issueNumber: null
+              };
+            }
+            
+            // Sanitize and validate data
+            submissionData.studentName = submissionData.studentName.replace(/[^a-zA-Z\s-]/g, '');
+            submissionData.rollNumber = submissionData.rollNumber.replace(/[^a-zA-Z0-9]/g, '');
+            
+            // Check for malicious content patterns
+            const maliciousPatterns = [
+              /eval\s*\(/gi,
+              /exec\s*\(/gi,
+              /__import__\s*\(/gi,
+              /subprocess/gi,
+              /os\.system/gi,
+              /rm\s+-rf/gi,
+              /<script>/gi,
+              /document\.cookie/gi
+            ];
+            
+            for (const pattern of maliciousPatterns) {
+              if (pattern.test(submissionData.submissionContent)) {
+                console.warn(`Potential malicious content detected: ${pattern}`);
+                // Log but don't fail - let instructor review
+              }
+            }
+            
+            // Export variables
+            core.exportVariable('STUDENT_NAME', submissionData.studentName);
+            core.exportVariable('ROLL_NUMBER', submissionData.rollNumber);
+            core.exportVariable('BATCH', submissionData.batch);
+            core.exportVariable('YEAR', submissionData.year);
+            core.exportVariable('STUDENT_EMAIL', submissionData.studentEmail);
+            core.exportVariable('PRACTICAL_NUMBER', submissionData.practicalNumber);
+            core.exportVariable('ISSUE_NUMBER', submissionData.issueNumber || '0');
+            
+            // Write submission to file with sanitized filename
+            const sanitizedFilename = `submission_${submissionData.rollNumber}_${Date.now()}.txt`;
+            fs.writeFileSync(sanitizedFilename, submissionData.submissionContent);
+            core.exportVariable('SUBMISSION_FILE', sanitizedFilename);
+            
+            console.log(`✅ Valid submission from ${submissionData.studentName} (${submissionData.rollNumber})`);
+            console.log(`📝 Practical ${submissionData.practicalNumber}`);
+            core.setOutput('is_submission', 'true');
+            
+            return submissionData;
+      
+      - name: Run AI Detection with retry
+        id: ai_detection
+        if: steps.extract.outputs.is_submission == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          RETRY_COUNT=0
+          MAX_RETRIES=${{ env.MAX_RETRIES }}
+          RETRY_DELAY=${{ env.RETRY_DELAY }}
+          
+          echo "🤖 Running AI detection..."
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if node scripts/ai-detector.js "${{ env.SUBMISSION_FILE }}" > ai-result.json 2>ai-error.log; then
+              echo "✅ AI detection completed successfully"
+              cat ai-result.json
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️ AI detection failed (attempt $RETRY_COUNT/$MAX_RETRIES). Retrying in ${RETRY_DELAY}s..."
+                cat ai-error.log
+                sleep $RETRY_DELAY
+              else
+                echo "❌ AI detection failed after $MAX_RETRIES attempts"
+                cat ai-error.log
+                echo '{"aiProbability": 0, "confidence": "unknown", "error": "Detection failed"}' > ai-result.json
+              fi
+            fi
+          done
+          
+      - name: Grade Assignment with retry
+        id: grading
+        if: steps.extract.outputs.is_submission == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          STUDENT_NAME: ${{ env.STUDENT_NAME }}
+          ROLL_NUMBER: ${{ env.ROLL_NUMBER }}
+          BATCH: ${{ env.BATCH }}
+          YEAR: ${{ env.YEAR }}
+        run: |
+          RETRY_COUNT=0
+          MAX_RETRIES=${{ env.MAX_RETRIES }}
+          RETRY_DELAY=${{ env.RETRY_DELAY }}
+          
+          echo "📊 Grading assignment..."
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if node scripts/grader.js "${{ env.SUBMISSION_FILE }}" "${{ env.PRACTICAL_NUMBER }}" ai-result.json > grade-result.json 2>grade-error.log; then
+              echo "✅ Grading completed successfully"
+              
+              # Extract key metrics
+              BASE_SCORE=$(cat grade-result.json | grep -o '"baseScore": *[0-9]*' | grep -o '[0-9]*' || echo "0")
+              AI_PENALTY=$(cat grade-result.json | grep -o '"aiPenalty": *-\?[0-9]*' | grep -o '-\?[0-9]*' || echo "0")
+              FINAL_SCORE=$(cat grade-result.json | grep -o '"finalScore": *[0-9]*' | grep -o '[0-9]*' || echo "0")
+              AI_PERCENT=$(cat grade-result.json | grep -o '"aiUsagePercent": *[0-9]*' | grep -o '[0-9]*' || echo "0")
+              
+              echo "BASE_SCORE=$BASE_SCORE" >> $GITHUB_ENV
+              echo "AI_PENALTY=$AI_PENALTY" >> $GITHUB_ENV
+              echo "FINAL_SCORE=$FINAL_SCORE" >> $GITHUB_ENV
+              echo "AI_PERCENT=$AI_PERCENT" >> $GITHUB_ENV
+              
+              echo "📈 Base Score: $BASE_SCORE/100"
+              echo "🤖 AI Penalty: $AI_PENALTY"
+              echo "🎯 Final Score: $FINAL_SCORE/100"
+              echo "📊 AI Usage: $AI_PERCENT%"
+              
+              cat grade-result.json
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️ Grading failed (attempt $RETRY_COUNT/$MAX_RETRIES). Retrying in ${RETRY_DELAY}s..."
+                cat grade-error.log
+                sleep $RETRY_DELAY
+              else
+                echo "❌ Grading failed after $MAX_RETRIES attempts"
+                cat grade-error.log
+                exit 1
+              fi
+            fi
+          done
+          
+      - name: Save results to CSV with conflict resolution
+        if: steps.extract.outputs.is_submission == 'true'
+        run: |
+          echo "💾 Saving results to CSV..."
+          
+          # Create results directory if it doesn't exist
+          mkdir -p results
+          
+          # Check if CSV exists, if not create with headers
+          if [ ! -f results/grades.csv ]; then
+            echo "timestamp,studentName,rollNumber,batch,year,practicalNumber,baseScore,aiPenalty,finalScore,gradeLetter,aiProbability,feedback" > results/grades.csv
+          fi
+          
+          # Extract data from JSON
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S")
+          FEEDBACK=$(cat grade-result.json | grep -o '"overallFeedback": *"[^"]*"' | cut -d'"' -f4 | head -c 100)
+          GRADE_LETTER=$(cat grade-result.json | grep -o '"gradeLetter": *"[^"]*"' | cut -d'"' -f4)
+          
+          # Append to CSV (with proper escaping)
+          echo "$TIMESTAMP,\"${{ env.STUDENT_NAME }}\",\"${{ env.ROLL_NUMBER }}\",${{ env.BATCH }},${{ env.YEAR }},${{ env.PRACTICAL_NUMBER }},${{ env.BASE_SCORE }},${{ env.AI_PENALTY }},${{ env.FINAL_SCORE }},\"$GRADE_LETTER\",${{ env.AI_PERCENT }},\"$FEEDBACK\"" >> results/grades.csv
+          
+          echo "✅ Results saved to CSV"
+          
+      - name: Commit results with retry
+        if: steps.extract.outputs.is_submission == 'true'
+        run: |
+          echo "📤 Committing results..."
+          
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          RETRY_COUNT=0
+          MAX_RETRIES=${{ env.MAX_RETRIES }}
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            # Pull latest changes to avoid conflicts
+            git pull --rebase origin ${{ github.ref_name }} || true
+            
+            git add results/grades.csv
+            
+            if git diff --staged --quiet; then
+              echo "No changes to commit"
+              break
+            fi
+            
+            git commit -m "Add grading results for ${{ env.STUDENT_NAME }} - Practical ${{ env.PRACTICAL_NUMBER }}" \
+                       -m "Score: ${{ env.FINAL_SCORE }}/100 | AI Usage: ${{ env.AI_PERCENT }}%"
+            
+            if git push; then
+              echo "✅ Results committed successfully"
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️ Push failed (attempt $RETRY_COUNT/$MAX_RETRIES). Retrying..."
+                sleep 5
+              else
+                echo "❌ Failed to push after $MAX_RETRIES attempts"
+                echo "Results queued for manual review"
+              fi
+            fi
+          done
+          
+      - name: Post results to issue
+        if: steps.extract.outputs.is_submission == 'true' && env.ISSUE_NUMBER != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read grading results
+            const gradeData = JSON.parse(fs.readFileSync('grade-result.json', 'utf-8'));
+            const aiData = JSON.parse(fs.readFileSync('ai-result.json', 'utf-8'));
+            
+            // Determine AI penalty severity
+            const aiPercent = aiData.aiProbability || 0;
+            let aiEmoji = '✅';
+            let aiStatus = 'Within acceptable limits';
+            let aiColor = '🟢';
+            
+            if (aiPercent > 80) {
+              aiEmoji = '🚫';
+              aiStatus = 'Academic integrity violation';
+              aiColor = '🔴';
+            } else if (aiPercent > 60) {
+              aiEmoji = '🚨';
+              aiStatus = 'High AI usage - requires review';
+              aiColor = '🔴';
+            } else if (aiPercent > 40) {
+              aiEmoji = '⚠️';
+              aiStatus = 'Moderate AI usage';
+              aiColor = '🟡';
+            } else if (aiPercent > 20) {
+              aiEmoji = '⚠️';
+              aiStatus = 'Minor AI assistance detected';
+              aiColor = '🟡';
+            }
+            
+            // Build strengths list
+            const strengthsList = (gradeData.strengths || [])
+              .map(s => `- ✅ ${s}`)
+              .join('\n');
+            
+            // Build improvements list
+            const improvementsList = (gradeData.improvements || [])
+              .map(i => `- 📈 ${i}`)
+              .join('\n');
+            
+            // Build technical assessment
+            const techAssessment = gradeData.technicalAssessment || {};
+            const techText = `
+**Correctness:** ${techAssessment.correctness || 'N/A'}
+**Code Quality:** ${techAssessment.codeQuality || 'N/A'}
+**Concept Understanding:** ${techAssessment.conceptUnderstanding || 'N/A'}
+**Completeness:** ${techAssessment.completeness || 'N/A'}
+            `.trim();
+            
+            // Build comment body
+            const comment = `
+# 📊 Grading Results
+
+## Final Score: ${gradeData.finalScore}/100 (Grade: ${gradeData.gradeLetter})
+
+### Score Breakdown
+| Metric | Value |
+|--------|-------|
+| **Base Score** | ${gradeData.baseScore}/100 |
+| **AI Penalty** | ${gradeData.aiPenalty} points |
+| **Final Score** | ${gradeData.finalScore}/100 |
+
+---
+
+## 🤖 AI Usage Analysis
+
+${aiEmoji} **AI Content Detected: ${aiPercent}%** ${aiColor}
+
+**Status:** ${aiStatus}
+
+${gradeData.aiUsageNotes || ''}
+
+---
+
+## 📝 Detailed Feedback
+
+### ✅ Strengths
+${strengthsList || 'No specific strengths listed.'}
+
+### 📈 Areas for Improvement
+${improvementsList || 'No specific improvements listed.'}
+
+### 💬 Overall Feedback
+${gradeData.overallFeedback || 'No overall feedback provided.'}
+
+---
+
+## 🔍 Technical Assessment
+
+${techText}
+
+${gradeData.learningEvidence ? `\n**Learning Evidence:** ${gradeData.learningEvidence}\n` : ''}
+
+---
+
+## 📋 Criteria Breakdown
+
+${(gradeData.criteria || []).map(c => `
+**${c.name}** (${c.score}/${c.maxScore} points)
+${c.feedback}
+`).join('\n')}
+
+---
+
+${aiPercent > 60 ? `
+## ⚠️ Important Notice
+
+Your submission has been flagged for high AI usage (${aiPercent}%). Your instructor will review this submission and may contact you for a discussion.
+
+**Remember:** Learning to use AI tools effectively is valuable, but demonstrating your own understanding is crucial for your education.
+` : ''}
+
+${aiPercent > 80 ? `
+## 🚨 Academic Integrity Violation
+
+Your submission shows ${aiPercent}% AI-generated content, which violates academic integrity policies. Your score has been set to 0, and this case will be reviewed by your instructor.
+` : ''}
+
+---
+
+*Graded automatically by AI Assignment Auto-Grader*
+*Timestamp: ${new Date().toISOString()}*
+            `.trim();
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.ISSUE_NUMBER),
+              body: comment
+            });
+            
+            // Add labels
+            const labels = ['graded'];
+            if (aiPercent > 60) labels.push('needs-review');
+            if (aiPercent > 80) labels.push('academic-integrity');
+            if (gradeData.finalScore >= 90) labels.push('excellent');
+            else if (gradeData.finalScore >= 80) labels.push('good');
+            else if (gradeData.finalScore < 60) labels.push('needs-improvement');
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.ISSUE_NUMBER),
+              labels: labels
+            });
+            
+            // Close issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.ISSUE_NUMBER),
+              state: 'closed'
+            });
+            
+            console.log('✅ Results posted to issue');
+            
+      - name: Handle errors
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            if (process.env.ISSUE_NUMBER !== '0') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(process.env.ISSUE_NUMBER),
+                body: `
+❌ **Grading Failed**
+
+We encountered an error while processing your submission. This has been logged and your instructor will review it manually.
+
+**Error Details:**
+- Student: ${process.env.STUDENT_NAME}
+- Roll Number: ${process.env.ROLL_NUMBER}
+- Practical: ${process.env.PRACTICAL_NUMBER}
+- Timestamp: ${new Date().toISOString()}
+
+Please contact your instructor if this issue persists.
+                `.trim()
+              });
+              
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(process.env.ISSUE_NUMBER),
+                labels: ['error', 'needs-review']
+              });
+            }
+            
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grading-logs-${{ env.ROLL_NUMBER }}-${{ github.run_number }}
+          path: |
+            ai-result.json
+            ai-error.log
+            grade-result.json
+            grade-error.log
+            ${{ env.SUBMISSION_FILE }}
+          retention-days: 30
+          node scripts/utils.js save-result \
+            "${{ env.STUDENT_NAME }}" \
+            "${{ env.STUDENT_ID }}" \
+            "${{ env.STUDENT_EMAIL }}" \
+            "${{ env.PRACTICAL_NUMBER }}"
+            
+      - name: Commit results
+        if: steps.extract.outputs.is_submission == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add results/grades.csv
+          git diff --staged --quiet || git commit -m "Add grading results for ${{ env.STUDENT_NAME }} (Practical ${{ env.PRACTICAL_NUMBER }})"
+          git push
+          
+      - name: Comment on issue with results
+        if: steps.extract.outputs.is_submission == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let aiResult, gradeResult;
+            try {
+              aiResult = JSON.parse(fs.readFileSync('ai-result.json', 'utf8'));
+              gradeResult = JSON.parse(fs.readFileSync('grade-result.json', 'utf8'));
+            } catch (error) {
+              console.error('Error reading results:', error);
+              return;
+            }
+            
+            // AI Detection Status
+            const aiProb = aiResult.aiProbability || 0;
+            const aiRecommendation = aiResult.recommendation || 'REVIEW';
+            let aiStatusIcon = '✅';
+            let aiStatusText = 'No AI Content Detected';
+            
+            if (aiProb >= 75) {
+              aiStatusIcon = '🚨';
+              aiStatusText = 'High AI Content Detected';
+            } else if (aiProb >= 50) {
+              aiStatusIcon = '⚠️';
+              aiStatusText = 'AI Content Detected';
+            } else if (aiProb >= 25) {
+              aiStatusIcon = '⚡';
+              aiStatusText = 'Possible AI Content';
+            }
+            
+            // Grade Status
+            const grade = gradeResult.totalScore || 0;
+            const baseScore = gradeResult.baseScore || grade;
+            const finalScore = gradeResult.finalScore || grade;
+            const aiPenalty = gradeResult.aiPenalty || 0;
+            const gradeEmoji = finalScore >= 90 ? '🌟' : finalScore >= 80 ? '👍' : finalScore >= 70 ? '👌' : finalScore >= 60 ? '📝' : '❌';
+            
+            // Build score display
+            let scoreDisplay = '';
+            if (aiPenalty !== 0) {
+              scoreDisplay = `**Base Score:** ${baseScore}/100\n**AI Penalty:** ${aiPenalty} points\n**Final Score:** ${finalScore}/100`;
+            } else {
+              scoreDisplay = `**Final Score:** ${finalScore}/100`;
+            }
+            
+            // Build technical assessment
+            let technicalText = '';
+            if (gradeResult.technicalAssessment) {
+              technicalText = '\n#### 🔍 Technical Assessment:\n';
+              Object.entries(gradeResult.technicalAssessment).forEach(([key, value]) => {
+                const label = key.replace(/([A-Z])/g, ' $1').trim();
+                const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                technicalText += `- **${capitalizedLabel}:** ${value}\n`;
+              });
+            }
+            
+            // Build learning evidence
+            let learningText = '';
+            if (gradeResult.learningEvidence) {
+              learningText = `\n**Learning Evidence:** ${gradeResult.learningEvidence}\n`;
+            }
+            
+            // Build flagged sections
+            let flaggedSectionsText = '';
+            if (aiResult.flaggedSections && aiResult.flaggedSections.length > 0) {
+              flaggedSectionsText = '\n#### 🚩 Flagged Sections:\n';
+              aiResult.flaggedSections.forEach(section => {
+                flaggedSectionsText += `- **Lines ${section.lines}**: ${section.reason}\n`;
+                if (section.severity) {
+                  flaggedSectionsText += `  - Severity: ${section.severity}\n`;
+                }
+              });
+            }
+            
+            // Build human elements
+            let humanElementsText = '';
+            if (aiResult.humanElements && aiResult.humanElements.length > 0) {
+              humanElementsText = '\n#### ✓ Human Elements:\n';
+              aiResult.humanElements.forEach(element => {
+                humanElementsText += `- **Lines ${element.lines}**: ${element.reason}\n`;
+              });
+            }
+            
+            // Build indicators
+            let indicatorsText = '';
+            if (aiResult.indicators) {
+              if (aiResult.indicators.aiIndicators && aiResult.indicators.aiIndicators.length > 0) {
+                indicatorsText += '\n**AI Indicators:**\n';
+                aiResult.indicators.aiIndicators.slice(0, 5).forEach(ind => {
+                  indicatorsText += `- ${ind}\n`;
+                });
+              }
+              if (aiResult.indicators.humanIndicators && aiResult.indicators.humanIndicators.length > 0) {
+                indicatorsText += '\n**Human Indicators:**\n';
+                aiResult.indicators.humanIndicators.slice(0, 5).forEach(ind => {
+                  indicatorsText += `- ${ind}\n`;
+                });
+              }
+            }
+            
+            const comment = `## ${gradeEmoji} Grading Results
+            
+**Student:** ${process.env.STUDENT_NAME}
+**Student ID:** ${process.env.STUDENT_ID}
+**Practical:** ${process.env.PRACTICAL_NUMBER}
+
+---
+
+### 📊 Grade Summary
+${scoreDisplay}
+**Grade Letter:** ${gradeResult.gradeLetter || 'N/A'}
+
+${gradeResult.aiUsageNotes ? `\n${gradeResult.aiUsageNotes}\n` : ''}
+
+### 🤖 AI Detection Analysis
+${aiStatusIcon} **${aiStatusText}**
+- **AI Probability:** ${aiProb}%
+- **Confidence:** ${aiResult.confidence || 'medium'}
+- **Recommendation:** ${aiRecommendation}
+${flaggedSectionsText}${humanElementsText}${indicatorsText}
+
+${aiResult.reasoning ? `**Detection Reasoning:** ${aiResult.reasoning}\n` : ''}
+${technicalText}${learningText}
+
+---
+
+### 📋 Grading Breakdown
+${gradeResult.criteria.map(c => {
+  let criterionText = `#### ${c.name}: ${c.score}/${c.maxScore}\n${c.feedback}`;
+  if (c.strengths) criterionText += `\n- ✓ **Strengths:** ${c.strengths}`;
+  if (c.improvements) criterionText += `\n- ⚠️ **Improvements:** ${c.improvements}`;
+  return criterionText;
+}).join('\n\n')}
+
+### 💬 Overall Feedback
+${gradeResult.overallFeedback}
+
+${gradeResult.strengths && gradeResult.strengths.length > 0 ? `\n**✓ Strengths:**\n${gradeResult.strengths.map(s => `- ${s}`).join('\n')}\n` : ''}
+${gradeResult.improvements && gradeResult.improvements.length > 0 ? `\n**⚠️ Areas for Improvement:**\n${gradeResult.improvements.map(i => `- ${i}`).join('\n')}\n` : ''}
+
+---
+
+${aiRecommendation === 'FAIL' || (gradeResult.aiPenaltyInfo && gradeResult.aiPenaltyInfo.requiresReview) ? '🚨 **URGENT: This submission requires immediate instructor review due to high AI content detection.**\n\n' : ''}
+${aiRecommendation === 'REVIEW' ? '⚠️ **This submission requires instructor review due to moderate AI detection results.**\n\n' : ''}
+
+*This is an automated grading with LLM-judge (Claude 3.5 Sonnet). If you believe there's an error, please contact your instructor.*
+
+📊 [View Full Dashboard](../../instructor.html)
+`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue?.number || context.payload.inputs.issue_number,
+              body: comment
+            });
+            
+            // Determine labels
+            const labels = ['graded', `practical-${process.env.PRACTICAL_NUMBER}`];
+            
+            if (aiProb >= 75) {
+              labels.push('ai-high-risk');
+            } else if (aiProb >= 50) {
+              labels.push('ai-detected');
+            } else if (aiProb >= 25) {
+              labels.push('ai-possible');
+            } else {
+              labels.push('ai-clean');
+            }
+            
+            if (aiRecommendation === 'FAIL' || aiRecommendation === 'REVIEW') {
+              labels.push('needs-review');
+            }
+            
+            // Close the issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue?.number || context.payload.inputs.issue_number,
+              state: 'closed',
+              labels: labels
+            });
+            
+      - name: Skip non-submission issue
+        if: steps.extract.outputs.is_submission == 'false'
+        run: |
+          echo "This is not a submission issue. Skipping grading workflow."

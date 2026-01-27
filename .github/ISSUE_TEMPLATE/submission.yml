@@ -1,0 +1,76 @@
+name: Assignment Submission
+description: Submit your practical assignment for grading
+title: "[SUBMISSION] Practical X - Your Name"
+labels: ["submission", "pending-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Assignment Submission Form
+        Please fill in all required fields below. Your submission will be automatically graded within a few minutes.
+        
+  - type: input
+    id: student_name
+    attributes:
+      label: Student Name
+      description: Your full name
+      placeholder: John Doe
+    validations:
+      required: true
+      
+  - type: input
+    id: student_id
+    attributes:
+      label: Student ID
+      description: Your student identification number
+      placeholder: "2024001"
+    validations:
+      required: true
+      
+  - type: input
+    id: student_email
+    attributes:
+      label: Email Address
+      description: Your email address for notifications
+      placeholder: john.doe@example.com
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: practical_number
+    attributes:
+      label: Practical Number
+      description: Which practical are you submitting?
+      options:
+        - Practical 1
+        - Practical 2
+        - Practical 3
+        - Practical 4
+        - Practical 5
+        - Practical 6
+        - Practical 7
+    validations:
+      required: true
+      
+  - type: textarea
+    id: submission
+    attributes:
+      label: Your Submission
+      description: Paste your code or answer here
+      placeholder: |
+        // Your code here
+        function example() {
+          return "Hello World";
+        }
+      render: text
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Declaration
+      description: By checking this box, you confirm that this work is your own
+      options:
+        - label: I certify that this is my own original work
+          required: true

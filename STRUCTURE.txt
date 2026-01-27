@@ -1,0 +1,42 @@
+ai-assignment-grader/
+│
+├── 📄 index.html                    # Student submission portal
+├── 📄 instructor.html               # Instructor dashboard
+├── 📄 package.json                  # Node.js dependencies
+├── 📄 .env.example                  # Environment template
+├── 📄 .gitignore                    # Git ignore rules
+│
+├── 📚 Documentation
+│   ├── 📄 README.md                 # Full documentation
+│   ├── 📄 QUICKSTART.md             # 5-minute setup guide
+│   ├── 📄 SETUP.md                  # Detailed setup instructions
+│   ├── 📄 PROJECT_SUMMARY.md        # Project overview
+│   └── 📄 LICENSE                   # MIT License
+│
+├── ⚙️ .github/
+│   ├── workflows/
+│   │   └── 📄 grade.yml            # GitHub Actions automation
+│   └── ISSUE_TEMPLATE/
+│       └── 📄 submission.yml       # Issue template for submissions
+│
+├── 🤖 scripts/
+│   ├── 📄 ai-detector.js           # AI content detection (Claude)
+│   ├── 📄 grader.js                # Auto-grading engine (Claude)
+│   └── 📄 utils.js                 # CSV utilities & helpers
+│
+├── 📋 rubrics/
+│   ├── 📄 practical_1.json         # Programming Fundamentals
+│   ├── 📄 practical_2.json         # Functions & Modular Programming
+│   ├── 📄 practical_3.json         # Arrays & Lists
+│   ├── 📄 practical_4.json         # Object-Oriented Programming
+│   ├── 📄 practical_5.json         # File I/O & Data Processing
+│   ├── 📄 practical_6.json         # Advanced Data Structures
+│   └── 📄 practical_7.json         # Final Integrated Project
+│
+└── 💾 results/
+    └── 📄 grades.csv               # Auto-generated grading results
+
+Total Files: 23
+Total Rubrics: 7
+Total Scripts: 3
+Total Documentation: 5

@@ -1,4 +1,29 @@
+# Dependencies
 node_modules/
+package-lock.json
+
+# Environment variables
 .env
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Test files
+test.txt
+submission.txt
+*-result.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/

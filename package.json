@@ -1,19 +1,31 @@
 {
   "name": "ai-assignment-grader",
   "version": "1.0.0",
-  "description": "",
+  "description": "GitHub Pages auto-grading portal with AI detection for student assignments",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:ai": "node test-ai-detection.js",
+    "grade": "node scripts/grader.js",
+    "detect-ai": "node scripts/ai-detector.js"
   },
-  "keywords": [],
+  "keywords": [
+    "ai-detection",
+    "auto-grading",
+    "github-pages",
+    "claude-api",
+    "education"
+  ],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "csv-parser": "^3.2.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "node-fetch": "^3.3.2"
   }
 }

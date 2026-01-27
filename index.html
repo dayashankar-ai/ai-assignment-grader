@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assignment Auto-Grader - Student Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #dbeafe;
+            --success-green: #10b981;
+            --warning-yellow: #f59e0b;
+            --danger-red: #ef4444;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header .tagline {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .ai-disclosure {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary-blue);
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .ai-disclosure h3 {
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .ai-disclosure p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .educational-message {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning-yellow);
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .educational-message p {
+            color: #92400e;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        label .required {
+            color: var(--danger-red);
+            margin-left: 2px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            font-family: inherit;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9fafb;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-blue);
+            background: var(--primary-light);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-blue);
+            background: var(--primary-light);
+        }
+
+        .file-upload-icon {
+            font-size: 3rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .file-upload-text {
+            color: var(--text-dark);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .file-upload-hint {
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .file-info {
+            display: none;
+            background: var(--primary-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-info.active {
+            display: flex;
+        }
+
+        .file-info-icon {
+            font-size: 1.5rem;
+        }
+
+        .file-info-details {
+            flex: 1;
+        }
+
+        .file-info-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .file-info-size {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .file-remove {
+            background: none;
+            border: none;
+            color: var(--danger-red);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+
+        .rubric-preview {
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .rubric-preview.active {
+            display: block;
+        }
+
+        .rubric-preview h4 {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .rubric-criteria {
+            display: grid;
+            gap: 8px;
+        }
+
+        .rubric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .rubric-item-name {
+            color: var(--text-dark);
+        }
+
+        .rubric-item-points {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            display: none;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-blue);
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        /* Results Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header h2 {
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .modal-header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary-light), #dbeafe);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .final-score {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .score-label {
+            color: var(--text-light);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-comparison {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-item-label {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .score-item-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .score-item-value.base {
+            color: var(--text-dark);
+        }
+
+        .score-item-value.penalty {
+            color: var(--danger-red);
+        }
+
+        .ai-usage-section {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ai-usage-section h3 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .ai-percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .ai-percentage.low {
+            color: var(--success-green);
+        }
+
+        .ai-percentage.medium {
+            color: var(--warning-yellow);
+        }
+
+        .ai-percentage.high {
+            color: var(--danger-red);
+        }
+
+        .ai-progress-bar {
+            height: 30px;
+            background: var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .ai-progress-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: width 1s ease-out;
+        }
+
+        .ai-progress-fill.low {
+            background: var(--success-green);
+        }
+
+        .ai-progress-fill.medium {
+            background: var(--warning-yellow);
+        }
+
+        .ai-progress-fill.high {
+            background: var(--danger-red);
+        }
+
+        .ai-penalty-note {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .ai-penalty-note.none {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .ai-penalty-note.low {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .ai-penalty-note.medium,
+        .ai-penalty-note.high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .feedback-section {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-section h3 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .feedback-section p {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .feedback-list {
+            list-style: none;
+        }
+
+        .feedback-list li {
+            padding: 10px;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text-dark);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .feedback-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 8px;
+            color: var(--success-green);
+            font-weight: 700;
+        }
+
+        .feedback-list.improvements li::before {
+            content: "→";
+            color: var(--warning-yellow);
+        }
+
+        .flagged-sections {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning-yellow);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .flagged-sections h4 {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .flagged-item {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .flagged-item-header {
+            color: var(--warning-yellow);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .flagged-item-code {
+            color: var(--text-dark);
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-light);
+            color: white;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header .tagline {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 25px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .final-score {
+                font-size: 3rem;
+            }
+
+            .score-comparison {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .modal-content {
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 AI Assignment Auto-Grader</h1>
+        <p class="tagline">Instant feedback with AI usage detection</p>
+    </div>
+
+    <div class="container">
+        <div class="ai-disclosure">
+            <h3>📊 AI Detection Notice</h3>
+            <p>Your submission will be analyzed for AI-generated content. We use advanced detection to ensure academic integrity while recognizing appropriate AI tool usage (research, debugging, learning).</p>
+        </div>
+
+        <div class="educational-message">
+            <p>💡 "Learning to use AI tools effectively is important, but understanding concepts yourself is crucial. This detector helps ensure you're learning, not just copying."</p>
+        </div>
+
+        <form id="submissionForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="studentName">Student Name <span class="required">*</span></label>
+                    <input type="text" id="studentName" name="studentName" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="rollNumber">Roll Number <span class="required">*</span></label>
+                    <input type="text" id="rollNumber" name="rollNumber" required placeholder="Enter your roll number">
+                </div>
+
+                <div class="form-group">
+                    <label for="batch">Batch <span class="required">*</span></label>
+                    <select id="batch" name="batch" required>
+                        <option value="">Select batch</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="year">Year <span class="required">*</span></label>
+                    <select id="year" name="year" required>
+                        <option value="">Select year</option>
+                        <option value="I">I</option>
+                        <option value="II">II</option>
+                        <option value="III">III</option>
+                        <option value="IV">IV</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="practicalNumber">Assignment Number <span class="required">*</span></label>
+                    <select id="practicalNumber" name="practicalNumber" required>
+                        <option value="">Select assignment</option>
+                        <option value="1">Practical 1</option>
+                        <option value="2">Practical 2</option>
+                        <option value="3">Practical 3</option>
+                        <option value="4">Practical 4</option>
+                        <option value="5">Practical 5</option>
+                        <option value="6">Practical 6</option>
+                        <option value="7">Practical 7</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>File Upload <span class="required">*</span></label>
+                    <input type="file" id="fileInput" accept=".txt,.py,.md,.pdf,.zip" style="display: none;" required>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div class="file-upload-icon">📁</div>
+                        <div class="file-upload-text">Click to upload or drag and drop</div>
+                        <div class="file-upload-hint">Supported: .txt, .py, .md, .pdf, .zip (Max 10MB)</div>
+                    </div>
+                    <div class="file-info" id="fileInfo">
+                        <span class="file-info-icon">📄</span>
+                        <div class="file-info-details">
+                            <div class="file-info-name" id="fileName"></div>
+                            <div class="file-info-size" id="fileSize"></div>
+                        </div>
+                        <button type="button" class="file-remove" id="fileRemove">✕</button>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <div class="rubric-preview" id="rubricPreview">
+                        <h4>📋 Assignment Rubric</h4>
+                        <div class="rubric-criteria" id="rubricCriteria"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Submit Assignment
+            </button>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText"></div>
+        </form>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="modal" id="resultsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Grading Results</h2>
+                <p>Your assignment has been graded</p>
+            </div>
+            <div class="modal-body">
+                <div class="score-display">
+                    <div class="final-score" id="finalScore">--</div>
+                    <div class="score-label">Final Score</div>
+                    <div class="score-comparison" id="scoreComparison"></div>
+                </div>
+
+                <div class="ai-usage-section">
+                    <h3>🤖 AI Usage Analysis</h3>
+                    <div class="ai-percentage" id="aiPercentage">--</div>
+                    <div class="ai-progress-bar">
+                        <div class="ai-progress-fill" id="aiProgressFill"></div>
+                    </div>
+                    <div class="ai-penalty-note" id="aiPenaltyNote"></div>
+                </div>
+
+                <div class="feedback-section">
+                    <h3>✅ Strengths</h3>
+                    <ul class="feedback-list" id="strengthsList"></ul>
+                </div>
+
+                <div class="feedback-section">
+                    <h3>📈 Areas for Improvement</h3>
+                    <ul class="feedback-list improvements" id="improvementsList"></ul>
+                </div>
+
+                <div class="feedback-section">
+                    <h3>💬 Overall Feedback</h3>
+                    <p id="overallFeedback"></p>
+                </div>
+
+                <div id="flaggedSectionsContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeModal">Close</button>
+                <button class="btn btn-primary" id="newSubmission">New Submission</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Rubric data
+        const rubrics = {
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px 15px;
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Assignment Submission Portal</h1>
+        <p class="subtitle">Submit your practical assignments for automated grading</p>
+
+        <div class="info-box">
+            <p><strong>Note:</strong> All submissions will be automatically checked for AI-generated content and graded according to the assignment rubric. Results will be available within a few minutes.</p>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <form id="submissionForm">
+            <div class="form-group">
+                <label for="studentName">Student Name <span class="required">*</span></label>
+                <input type="text" id="studentName" name="studentName" required placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label for="studentEmail">Student Email <span class="required">*</span></label>
+                <input type="email" id="studentEmail" name="studentEmail" required placeholder="your.email@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="studentId">Student ID <span class="required">*</span></label>
+                <input type="text" id="studentId" name="studentId" required placeholder="e.g., 2024001">
+            </div>
+
+            <div class="form-group">
+                <label for="practicalNumber">Practical Assignment <span class="required">*</span></label>
+                <select id="practicalNumber" name="practicalNumber" required>
+                    <option value="">Select an assignment</option>
+                    <option value="1">Practical 1</option>
+                    <option value="2">Practical 2</option>
+                    <option value="3">Practical 3</option>
+                    <option value="4">Practical 4</option>
+                    <option value="5">Practical 5</option>
+                    <option value="6">Practical 6</option>
+                    <option value="7">Practical 7</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="submission">Your Submission <span class="required">*</span></label>
+                <textarea id="submission" name="submission" required placeholder="Paste your assignment code or text here..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Additional Files (Optional)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileUpload" name="fileUpload" accept=".pdf,.doc,.docx,.txt,.zip">
+                    <label for="fileUpload" class="file-input-label">
+                        📎 Click to attach files (PDF, DOC, TXT, ZIP)
+                    </label>
+                </div>
+                <div id="fileName" class="file-name"></div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Submit Assignment</button>
+        </form>
+    </div>
+
+    <script>
+        // File upload handler
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || '';
+            const fileNameDisplay = document.getElementById('fileName');
+            if (fileName) {
+                fileNameDisplay.textContent = `📄 Selected: ${fileName}`;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        });
+
+        // Form submission handler
+        document.getElementById('submissionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('message');
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            // Get form data
+            const formData = {
+                studentName: document.getElementById('studentName').value,
+                studentEmail: document.getElementById('studentEmail').value,
+                studentId: document.getElementById('studentId').value,
+                practicalNumber: document.getElementById('practicalNumber').value,
+                submission: document.getElementById('submission').value,
+                timestamp: new Date().toISOString()
+    <script>
+        // Rubric data (simplified - in production, load from rubrics folder)
+        const rubrics = {
+            '1': { title: 'Introduction to Programming', totalPoints: 100, criteria: [
+                { name: 'Code Correctness', points: 30 },
+                { name: 'Code Quality', points: 25 },
+                { name: 'Documentation', points: 20 },
+                { name: 'Testing', points: 15 },
+                { name: 'Creativity', points: 10 }
+            ]},
+            '2': { title: 'Data Structures', totalPoints: 100, criteria: [
+                { name: 'Algorithm Efficiency', points: 35 },
+                { name: 'Implementation', points: 30 },
+                { name: 'Code Quality', points: 20 },
+                { name: 'Documentation', points: 15 }
+            ]},
+            '3': { title: 'Object-Oriented Programming', totalPoints: 100, criteria: [
+                { name: 'OOP Principles', points: 35 },
+                { name: 'Class Design', points: 30 },
+                { name: 'Code Quality', points: 20 },
+                { name: 'Documentation', points: 15 }
+            ]},
+            '4': { title: 'Database Design', totalPoints: 100, criteria: [
+                { name: 'Schema Design', points: 35 },
+                { name: 'Query Optimization', points: 30 },
+                { name: 'Normalization', points: 20 },
+                { name: 'Documentation', points: 15 }
+            ]},
+            '5': { title: 'Web Development', totalPoints: 100, criteria: [
+                { name: 'Functionality', points: 35 },
+                { name: 'UI/UX Design', points: 25 },
+                { name: 'Code Quality', points: 25 },
+                { name: 'Responsiveness', points: 15 }
+            ]},
+            '6': { title: 'API Development', totalPoints: 100, criteria: [
+                { name: 'API Design', points: 35 },
+                { name: 'Security', points: 25 },
+                { name: 'Documentation', points: 25 },
+                { name: 'Error Handling', points: 15 }
+            ]},
+            '7': { title: 'Final Project', totalPoints: 100, criteria: [
+                { name: 'Functionality', points: 30 },
+                { name: 'Code Quality', points: 25 },
+                { name: 'Innovation', points: 25 },
+                { name: 'Documentation', points: 20 }
+            ]}
+        };
+
+        // DOM Elements
+        const form = document.getElementById('submissionForm');
+        const fileInput = document.getElementById('fileInput');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileRemove = document.getElementById('fileRemove');
+        const practicalNumber = document.getElementById('practicalNumber');
+        const rubricPreview = document.getElementById('rubricPreview');
+        const rubricCriteria = document.getElementById('rubricCriteria');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultsModal = document.getElementById('resultsModal');
+        const closeModal = document.getElementById('closeModal');
+        const newSubmission = document.getElementById('newSubmission');
+
+        let selectedFile = null;
+
+        // File upload handling
+        fileUploadArea.addEventListener('click', () => fileInput.click());
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        fileRemove.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.remove('active');
+            fileUploadArea.style.display = 'block';
+        });
+
+        function handleFile(file) {
+            // Validate file size (10MB)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File size exceeds 10MB limit. Please choose a smaller file.');
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = ['.txt', '.py', '.md', '.pdf', '.zip'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowedTypes.includes(fileExt)) {
+                alert('Invalid file type. Allowed: ' + allowedTypes.join(', '));
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.add('active');
+            fileUploadArea.style.display = 'none';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Rubric preview
+        practicalNumber.addEventListener('change', (e) => {
+            const practical = e.target.value;
+            if (practical && rubrics[practical]) {
+                showRubric(rubrics[practical]);
+            } else {
+                rubricPreview.classList.remove('active');
+            }
+        });
+
+        function showRubric(rubric) {
+            rubricCriteria.innerHTML = '';
+            rubric.criteria.forEach(criterion => {
+                const item = document.createElement('div');
+                item.className = 'rubric-item';
+                item.innerHTML = `
+                    <span class="rubric-item-name">${criterion.name}</span>
+                    <span class="rubric-item-points">${criterion.points} pts</span>
+                `;
+                rubricCriteria.appendChild(item);
+            });
+            rubricPreview.classList.add('active');
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedFile) {
+                alert('Please upload a file');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+            // Show progress bar
+            progressBar.classList.add('active');
+            updateProgress(0, 'Uploading file...');
+
+            try {
+                // Read file content
+                const fileContent = await readFileContent(selectedFile);
+                
+                updateProgress(30, 'Creating submission...');
+
+                // Prepare submission data
+                const formData = {
+                    studentName: document.getElementById('studentName').value,
+                    rollNumber: document.getElementById('rollNumber').value,
+                    batch: document.getElementById('batch').value,
+                    year: document.getElementById('year').value,
+                    practicalNumber: document.getElementById('practicalNumber').value,
+                    fileName: selectedFile.name,
+                    fileContent: fileContent,
+                    timestamp: new Date().toISOString()
+                };
+
+                updateProgress(50, 'Submitting to GitHub...');
+
+                // In production, this would create a GitHub issue to trigger the workflow
+                // For now, simulate the submission and show mock results
+                await simulateSubmission(formData);
+
+                updateProgress(100, 'Complete!');
+
+                // Show results after a delay
+                setTimeout(() => {
+                    progressBar.classList.remove('active');
+                    displayResults(mockResults);
+                }, 1000);
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Submission failed. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Assignment';
+                progressBar.classList.remove('active');
+            }
+        });
+
+        function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file);
+            });
+        }
+
+        function updateProgress(percent, text) {
+            progressFill.style.width = percent + '%';
+            progressText.textContent = text;
+        }
+
+        async function simulateSubmission(data) {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // In production, create GitHub issue:
+            /*
+            const issueBody = `
+**Student Name:** ${data.studentName}
+**Roll Number:** ${data.rollNumber}
+**Batch:** ${data.batch}
+**Year:** ${data.year}
+**Practical Number:** ${data.practicalNumber}
+
+**Submission:**
+\`\`\`
+${data.fileContent}
+\`\`\`
+            `;
+
+            const response = await fetch('https://api.github.com/repos/YOUR_REPO/issues', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'token YOUR_TOKEN'
+                },
+                body: JSON.stringify({
+                    title: `Submission: ${data.studentName} - Practical ${data.practicalNumber}`,
+                    body: issueBody,
+                    labels: ['submission']
+                })
+            });
+            */
+        }
+
+        // Mock results for demonstration
+        const mockResults = {
+            finalScore: 75,
+            baseScore: 85,
+            aiPenalty: -10,
+            aiUsagePercent: 35,
+            gradeLetter: 'C',
+            aiPenaltyInfo: {
+                severity: 'low',
+                description: 'Moderate AI use - minor penalty'
+            },
+            strengths: [
+                'Well-structured code with clear logic',
+                'Good variable naming conventions',
+                'Proper error handling implemented'
+            ],
+            improvements: [
+                'Add more inline comments to explain complex sections',
+                'Consider edge cases in input validation',
+                'Improve code efficiency in loops'
+            ],
+            overallFeedback: 'Good work overall! Your solution demonstrates a solid understanding of the core concepts. The code is functional and mostly well-written. However, there are signs of AI assistance in certain sections, particularly in the documentation style and error handling patterns. Focus on developing your own coding style and understanding the "why" behind design decisions.',
+            flaggedSections: [
+                { line: '15-22', reason: 'Comprehensive docstring pattern typical of AI', code: 'def calculate(...):\n    """Detailed docstring..."""' },
+                { line: '45-50', reason: 'Formal error handling structure', code: 'try:\n    ...\nexcept Exception as e:\n    raise ValueError(...)' }
+            ]
+        };
+
+        // Display results
+        function displayResults(results) {
+            // Final score
+            document.getElementById('finalScore').textContent = results.finalScore + '/100';
+
+            // Score comparison
+            const scoreComparison = document.getElementById('scoreComparison');
+            scoreComparison.innerHTML = `
+                <div class="score-item">
+                    <div class="score-item-label">Base Score</div>
+                    <div class="score-item-value base">${results.baseScore}</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-item-label">AI Penalty</div>
+                    <div class="score-item-value penalty">${results.aiPenalty}</div>
+                </div>
+            `;
+
+            // AI usage
+            const aiPercent = results.aiUsagePercent;
+            const aiClass = aiPercent <= 20 ? 'low' : aiPercent <= 60 ? 'medium' : 'high';
+            
+            const aiPercentageEl = document.getElementById('aiPercentage');
+            aiPercentageEl.textContent = aiPercent + '%';
+            aiPercentageEl.className = 'ai-percentage ' + aiClass;
+
+            const aiProgressFill = document.getElementById('aiProgressFill');
+            aiProgressFill.className = 'ai-progress-fill ' + aiClass;
+            setTimeout(() => {
+                aiProgressFill.style.width = aiPercent + '%';
+                aiProgressFill.textContent = aiPercent + '% AI Detected';
+            }, 500);
+
+            // AI penalty note
+            const aiPenaltyNote = document.getElementById('aiPenaltyNote');
+            let penaltyClass, penaltyText;
+            if (aiPercent <= 20) {
+                penaltyClass = 'none';
+                penaltyText = '✅ Within acceptable limits. No penalty applied.';
+            } else if (aiPercent <= 40) {
+                penaltyClass = 'low';
+                penaltyText = '⚠️ ' + results.aiPenaltyInfo.description;
+            } else if (aiPercent <= 80) {
+                penaltyClass = 'medium';
+                penaltyText = '🚨 ' + results.aiPenaltyInfo.description + '. Please review our AI usage policy.';
+            } else {
+                penaltyClass = 'high';
+                penaltyText = '🚫 Academic integrity violation. Your instructor will contact you.';
+            }
+            aiPenaltyNote.className = 'ai-penalty-note ' + penaltyClass;
+            aiPenaltyNote.textContent = penaltyText;
+
+            // Strengths
+            const strengthsList = document.getElementById('strengthsList');
+            strengthsList.innerHTML = '';
+            results.strengths.forEach(strength => {
+                const li = document.createElement('li');
+                li.textContent = strength;
+                strengthsList.appendChild(li);
+            });
+
+            // Improvements
+            const improvementsList = document.getElementById('improvementsList');
+            improvementsList.innerHTML = '';
+            results.improvements.forEach(improvement => {
+                const li = document.createElement('li');
+                li.textContent = improvement;
+                improvementsList.appendChild(li);
+            });
+
+            // Overall feedback
+            document.getElementById('overallFeedback').textContent = results.overallFeedback;
+
+            // Flagged sections
+            const flaggedContainer = document.getElementById('flaggedSectionsContainer');
+            if (results.flaggedSections && results.flaggedSections.length > 0) {
+                let flaggedHTML = '<div class="flagged-sections"><h4>⚠️ Flagged Code Sections</h4>';
+                results.flaggedSections.forEach(section => {
+                    flaggedHTML += `
+                        <div class="flagged-item">
+                            <div class="flagged-item-header">Lines ${section.line}: ${section.reason}</div>
+                            <div class="flagged-item-code">${section.code}</div>
+                        </div>
+                    `;
+                });
+                flaggedHTML += '</div>';
+                flaggedContainer.innerHTML = flaggedHTML;
+            } else {
+                flaggedContainer.innerHTML = '';
+            }
+
+            // Show modal
+            resultsModal.classList.add('active');
+
+            // Reset form
+            form.reset();
+            selectedFile = null;
+            fileInfo.classList.remove('active');
+            fileUploadArea.style.display = 'block';
+            rubricPreview.classList.remove('active');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Assignment';
+        }
+
+        // Modal controls
+        closeModal.addEventListener('click', () => {
+            resultsModal.classList.remove('active');
+        });
+
+        newSubmission.addEventListener('click', () => {
+            resultsModal.classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Close modal on outside click
+        resultsModal.addEventListener('click', (e) => {
+            if (e.target === resultsModal) {
+                resultsModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
