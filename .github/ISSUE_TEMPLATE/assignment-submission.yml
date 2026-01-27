@@ -1,0 +1,71 @@
+name: Assignment Submission
+description: Submit your assignment for automated grading
+title: "[Submission] Practical X - Your Name"
+labels: ["submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Assignment Submission Form
+        Fill out this form to submit your assignment for automated grading.
+        
+  - type: input
+    id: student_name
+    attributes:
+      label: Student Name
+      description: Your full name
+      placeholder: "John Doe"
+    validations:
+      required: true
+      
+  - type: input
+    id: student_id
+    attributes:
+      label: Student ID
+      description: Your student/roll number
+      placeholder: "CS2024001"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: practical_number
+    attributes:
+      label: Practical Number
+      description: Which practical are you submitting?
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+        - "7"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Submission
+      description: Paste your complete code here
+      placeholder: |
+        ```python
+        # Your code here
+        ```
+      render: python
+    validations:
+      required: true
+      
+  - type: textarea
+    id: readme
+    attributes:
+      label: Documentation/README
+      description: Describe your approach and results
+      placeholder: |
+        ## Approach
+        Explain your implementation...
+        
+        ## Results
+        Describe what you learned...
+    validations:
+      required: true

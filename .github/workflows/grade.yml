@@ -1,8 +1,9 @@
 name: Auto Grade Assignments
 
 on:
-  # Trigger on any issue activity
+  # Trigger when issues are opened with 'submission' label
   issues:
+    types: [opened, labeled]
   
   # Trigger on file commits to submissions/ folder
   push:
