@@ -1,4 +1,4 @@
-**Student Name:** Test Student
+**Student Name:** Test Student Updated
 **Student ID:** TEST001
 **Assignment:** Practical 1
 
@@ -7,7 +7,7 @@
 ```python
 # test.py
 def hello():
-    print("Hello World")
+    print("Hello World from AI Assignment Grader!")
 
 hello()
 ```
