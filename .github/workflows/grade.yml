@@ -172,22 +172,44 @@ jobs:
             } 
             // Handle file-based submission from push event
             else if (context.eventName === 'push') {
+              console.log('Push event detected');
+              console.log('Full payload:', JSON.stringify(context.payload, null, 2));
+              
               const commits = context.payload.commits || [];
+              console.log('Commits array:', JSON.stringify(commits, null, 2));
+              
               // Check both added and modified files
               const addedFiles = commits.flatMap(c => c.added || []);
               const modifiedFiles = commits.flatMap(c => c.modified || []);
               const allFiles = [...addedFiles, ...modifiedFiles];
-              const submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
               
-              console.log('Push event detected');
               console.log('Added files:', addedFiles);
               console.log('Modified files:', modifiedFiles);
+              console.log('All files:', allFiles);
+              
+              // Also check files in submissions/ directory directly
+              const submissionsDir = 'submissions';
+              let filesInDir = [];
+              if (fs.existsSync(submissionsDir)) {
+                filesInDir = fs.readdirSync(submissionsDir).filter(f => f.endsWith('.txt'));
+                console.log('Files in submissions/ directory:', filesInDir);
+              }
+              
+              const submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
               console.log('Submission files found:', submissionFiles);
               
               if (submissionFiles.length === 0) {
-                console.log('No submission files found in submissions/ folder');
-                core.setOutput('is_submission', 'false');
-                return;
+                console.log('No submission files found in commits. Checking directory...');
+                // Fallback: check directory directly for newest file
+                if (filesInDir.length > 0) {
+                  const latestFile = filesInDir[filesInDir.length - 1]; // Get last file
+                  submissionFiles.push(`submissions/${latestFile}`);
+                  console.log('Using latest file from directory:', latestFile);
+                } else {
+                  console.log('No submission files found in submissions/ folder');
+                  core.setOutput('is_submission', 'false');
+                  return;
+                }
               }
               
               // Use first submission file
