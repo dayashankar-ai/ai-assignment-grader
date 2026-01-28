@@ -1,0 +1,31 @@
+Student Name: Test User
+Roll Number: 2024TEST999
+Batch: 2024
+Email: test@example.com
+Practical Number: 1
+Submission Date: 2026-01-28T16.49.21Z
+
+================== CODE/DOCUMENTATION ==================
+
+# Practical 1: Prompt Engineering Fundamentals
+# Testing automatic grading with real API key
+
+from anthropic import Anthropic
+
+client = Anthropic(api_key="my-key")
+
+# Temperature testing
+for temp in [0.0, 0.5, 1.0]:
+    response = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=100,
+        temperature=temp,
+        messages=[{"role": "user", "content": "Write a creative story"}]
+    )
+    print(f"Temp {temp}: {response.content[0].text}")
+
+# Learning Report:
+# I learned that temperature controls randomness in AI responses.
+# Lower values give consistent results, higher values give creative outputs.
+
+================== END OF SUBMISSION ==================
