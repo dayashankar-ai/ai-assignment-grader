@@ -352,17 +352,14 @@
         </div>
     </div>
 
-    <!-- Load GitHub token configuration from external file (gitignored) -->
-    <script src="config.js"></script>
-
     <script>
         // Configuration
         const GITHUB_OWNER = 'dayashankar-ai';
         const GITHUB_REPO = 'ai-assignment-grader';
         const GITHUB_BRANCH = 'main';
         
-        // Token loaded from config.js (not in git repository)
-        const GITHUB_TOKEN = window.GITHUB_TOKEN;
+        // Token loaded from localStorage (configured via setup.html)
+        const GITHUB_TOKEN = localStorage.getItem('github_token') || window.GITHUB_TOKEN;
 
         // DOM elements
         const form = document.getElementById('submissionForm');
@@ -436,7 +433,7 @@
 
             // Check if token is configured
             if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
-                showMessage('error', 'System not configured. Please contact your instructor.');
+                showMessage('error', '⚠️ System not configured.<br><br>Instructor: Please visit <a href="setup.html">setup.html</a> to configure the system first.');
                 return;
             }
 

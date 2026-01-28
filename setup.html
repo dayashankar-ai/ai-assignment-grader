@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup - AI Assignment Grader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .steps h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .steps ol {
+            margin-left: 20px;
+        }
+
+        .steps li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .steps code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 System Setup</h1>
+            <p>Configure GitHub Token (Instructor Only)</p>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <h3>⚠️ Important: This is for instructors only!</h3>
+                <p>This page configures the system to allow students to submit assignments directly. You only need to do this once.</p>
+                <p><strong>Students don't need to access this page.</strong></p>
+            </div>
+
+            <div id="message" class="message"></div>
+
+            <div class="steps">
+                <h3>📋 Setup Steps:</h3>
+                <ol>
+                    <li>Get your GitHub Personal Access Token (starts with <code>ghp_...</code>)</li>
+                    <li>Paste it in the field below</li>
+                    <li>Click "Save Configuration"</li>
+                    <li>The token is saved securely in your browser</li>
+                    <li>Share <code>submit.html</code> link with students</li>
+                </ol>
+            </div>
+
+            <form id="setupForm">
+                <div class="form-group">
+                    <label for="token">🔑 GitHub Personal Access Token:</label>
+                    <input type="text" id="token" name="token" 
+                           placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" 
+                           required>
+                </div>
+
+                <button type="submit" class="btn">💾 Save Configuration</button>
+                <button type="button" class="btn" id="testBtn" style="background: #28a745; margin-top: 10px;">
+                    ✅ Test Token
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('setupForm');
+        const testBtn = document.getElementById('testBtn');
+        const messageDiv = document.getElementById('message');
+        const tokenInput = document.getElementById('token');
+
+        // Load existing token if available
+        const savedToken = localStorage.getItem('github_token');
+        if (savedToken) {
+            tokenInput.value = savedToken;
+            showMessage('success', '✅ Token already configured! You can update it or test it below.');
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const token = tokenInput.value.trim();
+
+            if (!token.startsWith('ghp_')) {
+                showMessage('error', '❌ Invalid token format. GitHub tokens start with "ghp_"');
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('github_token', token);
+            
+            // Also set window.GITHUB_TOKEN for submit.html
+            window.GITHUB_TOKEN = token;
+
+            showMessage('success', `
+                ✅ <strong>Configuration Saved!</strong><br><br>
+                The token is now stored securely in your browser.<br><br>
+                <strong>Next Steps:</strong><br>
+                1. Click "Test Token" to verify it works<br>
+                2. Share this link with students: <a href="submit.html">submit.html</a><br>
+                3. Students can now submit assignments directly!
+            `);
+        });
+
+        testBtn.addEventListener('click', async () => {
+            const token = tokenInput.value.trim() || localStorage.getItem('github_token');
+
+            if (!token) {
+                showMessage('error', '❌ No token configured. Please save a token first.');
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Testing...';
+
+            try {
+                // Test GitHub API access
+                const response = await fetch('https://api.github.com/repos/dayashankar-ai/ai-assignment-grader', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                testBtn.disabled = false;
+                testBtn.textContent = '✅ Test Token';
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage('success', `
+                        ✅ <strong>Token Works Perfectly!</strong><br><br>
+                        Successfully connected to repository: <strong>${data.full_name}</strong><br>
+                        Access: <strong>${data.permissions.push ? 'Write' : 'Read-Only'}</strong><br><br>
+                        ${data.permissions.push ? 
+                            '✅ Token has write access - students can submit!' : 
+                            '⚠️ Token needs write access - please check token permissions'}
+                    `);
+                } else {
+                    const errorData = await response.json();
+                    showMessage('error', `
+                        ❌ <strong>Token Test Failed!</strong><br><br>
+                        Error: ${errorData.message || 'Invalid token'}<br><br>
+                        Please check:<br>
+                        • Token is copied correctly<br>
+                        • Token has 'repo' permissions<br>
+                        • Token is not expired
+                    `);
+                }
+            } catch (error) {
+                testBtn.disabled = false;
+                testBtn.textContent = '✅ Test Token';
+                showMessage('error', `
+                    ❌ <strong>Connection Error!</strong><br><br>
+                    ${error.message}<br><br>
+                    Check your internet connection and try again.
+                `);
+            }
+        });
+
+        function showMessage(type, text) {
+            messageDiv.className = `message ${type} show`;
+            messageDiv.innerHTML = text;
+        }
+    </script>
+</body>
+</html>
