@@ -206,7 +206,9 @@ Respond ONLY with valid JSON, no additional text.`
     try {
       // Try to extract JSON if wrapped in markdown code blocks
       let jsonText = responseText;
-      const jsonMatch = responseText.match(new RegExp('```json\\s*([\\s\\S]*?)\\s*```'));
+      const backtick = String.fromCharCode(96);
+      const pattern = backtick + backtick + backtick + 'json\\s*([\\s\\S]*?)\\s*' + backtick + backtick + backtick;
+      const jsonMatch = responseText.match(new RegExp(pattern));
       if (jsonMatch) {
         jsonText = jsonMatch[1];
       }
