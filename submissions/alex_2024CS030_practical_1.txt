@@ -1,0 +1,73 @@
+STUDENT_NAME: Alex Johnson
+STUDENT_ID: 2024CS030
+STUDENT_EMAIL: alex.johnson@university.edu
+BATCH: 2024
+PRACTICAL_NUMBER: 1
+
+=== TEMPERATURE TESTING PROGRAM ===
+
+```python
+# Temperature Testing Program
+# This program tests temperature sensor by taking 10 readings
+
+def read_temperature():
+    """Simulates reading from temperature sensor"""
+    import random
+    return round(random.uniform(20.0, 30.0), 2)
+
+def analyze_readings(readings):
+    """Analyzes temperature readings"""
+    avg = sum(readings) / len(readings)
+    max_temp = max(readings)
+    min_temp = min(readings)
+    
+    print(f"\n=== Temperature Analysis ===")
+    print(f"Average Temperature: {avg:.2f}°C")
+    print(f"Maximum Temperature: {max_temp:.2f}°C")
+    print(f"Minimum Temperature: {min_temp:.2f}°C")
+    
+    # Check if within normal range
+    if 18 <= avg <= 32:
+        print("Status: NORMAL")
+    else:
+        print("Status: WARNING - Temperature out of range")
+    
+    return avg, max_temp, min_temp
+
+def main():
+    print("Starting Temperature Sensor Test...")
+    print("Taking 10 readings...\n")
+    
+    readings = []
+    for i in range(1, 11):
+        temp = read_temperature()
+        readings.append(temp)
+        print(f"Reading {i}: {temp}°C")
+    
+    analyze_readings(readings)
+
+if __name__ == "__main__":
+    main()
+```
+
+=== LEARNING SUMMARY ===
+
+What I learned:
+1. How to create functions in Python with proper docstrings
+2. Using the random module for sensor simulation
+3. List operations (append, sum, max, min)
+4. String formatting with f-strings and .2f for decimal places
+5. Conditional logic for status checking
+6. The importance of the if __name__ == "__main__" pattern
+
+Challenges faced:
+- Initially forgot to import random module inside the function
+- Had to learn about f-string formatting for decimal places
+- Understanding the difference between average and sum
+
+Solutions:
+- Added import statement in the read_temperature function
+- Researched Python f-string documentation
+- Used len() to calculate average correctly
+
+This practical helped me understand basic Python programming concepts including functions, loops, and data analysis.
