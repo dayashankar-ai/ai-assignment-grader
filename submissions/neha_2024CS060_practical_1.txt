@@ -1,0 +1,141 @@
+STUDENT_NAME: Neha Patel
+STUDENT_ID: 2024CS060
+STUDENT_EMAIL: neha.patel@university.edu
+BATCH: 2024
+PRACTICAL_NUMBER: 1
+
+=== TEMPERATURE TESTING PROGRAM ===
+
+```python
+# Temperature Sensor Testing Program
+# Author: Neha Patel (2024CS060)
+
+import random
+
+def get_sensor_reading():
+    """Simulate temperature sensor reading"""
+    return round(random.uniform(22.0, 28.0), 2)
+
+def main():
+    print("=" * 60)
+    print("TEMPERATURE SENSOR TESTING PROGRAM")
+    print("=" * 60)
+    print()
+    
+    # Collect 10 readings
+    readings = []
+    print("Collecting 10 temperature readings:\n")
+    
+    for i in range(1, 11):
+        temp = get_sensor_reading()
+        readings.append(temp)
+        
+        # Display reading with status
+        if temp < 23:
+            status = "LOW"
+        elif temp > 27:
+            status = "HIGH"
+        else:
+            status = "NORMAL"
+        
+        print(f"Reading {i:2d}: {temp:5.2f}°C - Status: {status}")
+    
+    # Calculate statistics
+    print("\n" + "-" * 60)
+    print("STATISTICAL ANALYSIS")
+    print("-" * 60)
+    
+    average = sum(readings) / len(readings)
+    maximum = max(readings)
+    minimum = min(readings)
+    temp_range = maximum - minimum
+    
+    print(f"Total Readings: {len(readings)}")
+    print(f"Average Temperature: {average:.2f}°C")
+    print(f"Maximum Temperature: {maximum:.2f}°C")
+    print(f"Minimum Temperature: {minimum:.2f}°C")
+    print(f"Temperature Range: {temp_range:.2f}°C")
+    
+    # Overall status
+    print("\n" + "-" * 60)
+    if average < 23:
+        print("Overall Status: BELOW OPTIMAL RANGE")
+        print("Recommendation: Check heating system")
+    elif average > 27:
+        print("Overall Status: ABOVE OPTIMAL RANGE")
+        print("Recommendation: Check cooling system")
+    else:
+        print("Overall Status: WITHIN OPTIMAL RANGE")
+        print("Recommendation: System operating normally")
+    
+    print("-" * 60)
+
+if __name__ == "__main__":
+    main()
+```
+
+=== LEARNING SUMMARY ===
+
+**What I Learned:**
+
+1. **Random Module Usage**
+   - How to generate random floating-point numbers
+   - Using round() function for decimal precision
+   - Understanding the uniform() distribution
+
+2. **List Operations**
+   - Creating and appending to lists
+   - Using built-in functions: sum(), max(), min(), len()
+   - Iterating through lists
+
+3. **String Formatting**
+   - f-strings for variable interpolation
+   - Format specifiers for alignment and precision
+   - Using :2d for integer padding, :5.2f for float formatting
+
+4. **Control Flow**
+   - if-elif-else for multi-condition checking
+   - for loops with range()
+   - Conditional logic for status determination
+
+5. **Functions**
+   - Defining functions with def keyword
+   - Docstrings for documentation
+   - Return values and function calls
+
+6. **Output Formatting**
+   - Using print() effectively
+   - Creating visual separators with * and -
+   - Aligning output for readability
+
+**Challenges and Solutions:**
+
+Challenge 1: Understanding format specifiers
+- Initial confusion about :5.2f syntax
+- Solution: Researched Python documentation, understood width and precision
+
+Challenge 2: Deciding on optimal temperature range
+- Needed to define what constitutes normal temperature
+- Solution: Set 23-27°C as optimal based on typical room temperature standards
+
+Challenge 3: Making output readable
+- First attempt had poor alignment
+- Solution: Used format specifiers for consistent column widths
+
+**Code Quality Improvements:**
+
+1. Added meaningful variable names (readings, average, temp_range)
+2. Included status indicators for each reading
+3. Created clear visual sections with separators
+4. Added recommendations based on analysis
+5. Used proper docstring for function documentation
+
+**What I Would Add Next:**
+
+- Save readings to a CSV file for later analysis
+- Plot temperature graph using matplotlib
+- Add timestamp to each reading
+- Implement data validation to detect sensor errors
+- Create a GUI for better visualization
+
+This practical helped me understand basic Python concepts and the importance of clean, well-formatted output.
