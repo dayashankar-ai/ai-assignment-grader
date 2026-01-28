@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Assignment - AI Assignment Grader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .file-upload {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .file-upload:hover {
+            background: #eef1ff;
+            border-color: #764ba2;
+        }
+
+        .file-upload.drag-over {
+            background: #e0e7ff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .file-upload p {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .small-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Submit Your Assignment</h1>
+            <p>Upload your practical work for automatic grading</p>
+        </div>
+
+        <div class="content">
+            <div class="instructions">
+                <h3>📋 Before You Submit:</h3>
+                <ul>
+                    <li>File must be named: <strong>yourname_rollnumber_practical_X.txt</strong></li>
+                    <li>Example: <strong>rahul_2024CS001_practical_1.txt</strong></li>
+                    <li>Maximum file size: <strong>10 MB</strong></li>
+                    <li>Include your code and documentation in the file</li>
+                    <li>Results will be available in 2-3 minutes after submission</li>
+                </ul>
+            </div>
+
+            <div id="message" class="message"></div>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Uploading and processing your submission...</p>
+                <p class="small-text">This may take a few seconds</p>
+            </div>
+
+            <form id="submissionForm">
+                <div class="form-group">
+                    <label for="studentName">👤 Your Full Name *</label>
+                    <input type="text" id="studentName" name="studentName" required 
+                           placeholder="e.g., Rahul Kumar">
+                </div>
+
+                <div class="form-group">
+                    <label for="rollNumber">🎫 Roll Number *</label>
+                    <input type="text" id="rollNumber" name="rollNumber" required 
+                           placeholder="e.g., 2024CS001">
+                </div>
+
+                <div class="form-group">
+                    <label for="batch">📅 Batch *</label>
+                    <input type="text" id="batch" name="batch" required 
+                           placeholder="e.g., 2024">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">📧 Email Address *</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="e.g., rahul@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="practicalNumber">📚 Practical Number *</label>
+                    <select id="practicalNumber" name="practicalNumber" required>
+                        <option value="">-- Select Practical --</option>
+                        <option value="1">Practical 1 - Prompt Engineering Fundamentals</option>
+                        <option value="2">Practical 2 - Chain-of-Thought Prompting</option>
+                        <option value="3">Practical 3 - AI-Assisted Code Generation</option>
+                        <option value="4">Practical 4 - Context Window Management</option>
+                        <option value="5">Practical 5 - Fine-tuning and Evaluation</option>
+                        <option value="6">Practical 6 - Multimodal AI Applications</option>
+                        <option value="7">Practical 7 - AI Ethics and Best Practices</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📎 Upload Your Submission File *</label>
+                    <div class="file-upload" id="fileUpload">
+                        <input type="file" id="fileInput" name="file" accept=".txt,.py,.js,.md" required>
+                        <div class="file-icon">📄</div>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p class="small-text">Supported formats: .txt, .py, .js, .md (Max 10MB)</p>
+                    </div>
+                    <div class="file-info" id="fileInfo"></div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    🚀 Submit Assignment
+                </button>
+            </form>
+        </div>
+
+        <div class="footer">
+            <p>After submission, check your results at the <a href="index.html">Student Dashboard</a></p>
+            <p class="small-text">Automatic grading powered by AI • Results in 2-3 minutes</p>
+        </div>
+    </div>
+
+    <!-- Load GitHub token configuration from external file (gitignored) -->
+    <script src="config.js"></script>
+
+    <script>
+        // Configuration
+        const GITHUB_OWNER = 'dayashankar-ai';
+        const GITHUB_REPO = 'ai-assignment-grader';
+        const GITHUB_BRANCH = 'main';
+        
+        // Token loaded from config.js (not in git repository)
+        const GITHUB_TOKEN = window.GITHUB_TOKEN;
+
+        // DOM elements
+        const form = document.getElementById('submissionForm');
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const messageDiv = document.getElementById('message');
+
+        let selectedFile = null;
+
+        // File upload interactions
+        fileUpload.addEventListener('click', () => fileInput.click());
+
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('drag-over');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('drag-over');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            selectedFile = file;
+            
+            // Validate file size (10MB max)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showMessage('error', 'File too large! Maximum size is 10MB.');
+                selectedFile = null;
+                return;
+            }
+
+            // Show file info
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileInfo.innerHTML = `
+                <strong>✅ File Selected:</strong><br>
+                📄 Name: ${file.name}<br>
+                📊 Size: ${sizeInMB} MB<br>
+                📁 Type: ${file.type || 'text/plain'}
+            `;
+            fileInfo.classList.add('show');
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedFile) {
+                showMessage('error', 'Please select a file to upload!');
+                return;
+            }
+
+            // Check if token is configured
+            if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
+                showMessage('error', 'System not configured. Please contact your instructor.');
+                return;
+            }
+
+            const studentName = document.getElementById('studentName').value.trim();
+            const rollNumber = document.getElementById('rollNumber').value.trim();
+            const batch = document.getElementById('batch').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const practicalNumber = document.getElementById('practicalNumber').value;
+
+            // Validate filename format
+            const expectedFilename = `${studentName.toLowerCase().replace(/\s+/g, '_')}_${rollNumber}_practical_${practicalNumber}.txt`;
+            if (!selectedFile.name.toLowerCase().includes(rollNumber.toLowerCase())) {
+                showMessage('error', `⚠️ File name should include your roll number. Expected format: ${expectedFilename}`);
+                return;
+            }
+
+            // Show loading
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+            messageDiv.classList.remove('show');
+
+            try {
+                // Read file content
+                const fileContent = await readFileAsText(selectedFile);
+
+                // Prepare submission data
+                const submissionContent = `Student Name: ${studentName}
+Roll Number: ${rollNumber}
+Batch: ${batch}
+Email: ${email}
+Practical Number: ${practicalNumber}
+Submission Date: ${new Date().toISOString()}
+
+================== CODE/DOCUMENTATION ==================
+
+${fileContent}
+
+================== END OF SUBMISSION ==================
+`;
+
+                // Upload to GitHub
+                await uploadToGitHub(selectedFile.name, submissionContent);
+
+                // Success
+                loading.classList.remove('show');
+                showMessage('success', `
+                    ✅ <strong>Submission Successful!</strong><br><br>
+                    📝 Your assignment has been uploaded and grading has started automatically.<br>
+                    ⏱️ Results will be available in <strong>2-3 minutes</strong>.<br>
+                    📊 Check your results at: <a href="index.html">Student Dashboard</a><br><br>
+                    🎯 What happens next:<br>
+                    • AI detection analysis (1 min)<br>
+                    • Automatic grading (1-2 mins)<br>
+                    • Feedback generation (30 secs)<br>
+                    • Results published to dashboard<br><br>
+                    Thank you for your submission, ${studentName}! 🎉
+                `);
+
+                // Reset form
+                form.reset();
+                selectedFile = null;
+                fileInfo.classList.remove('show');
+                submitBtn.disabled = false;
+
+            } catch (error) {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+                showMessage('error', `
+                    ❌ <strong>Upload Failed!</strong><br><br>
+                    ${error.message}<br><br>
+                    Please try again or contact your instructor if the problem persists.
+                `);
+                console.error('Submission error:', error);
+            }
+        });
+
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(new Error('Failed to read file'));
+                reader.readAsText(file);
+            });
+        }
+
+        async function uploadToGitHub(filename, content) {
+            const path = `submissions/${filename}`;
+            const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
+
+            // Encode content to base64
+            const base64Content = btoa(unescape(encodeURIComponent(content)));
+
+            // Check if file already exists
+            let sha = null;
+            try {
+                const checkResponse = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                if (checkResponse.ok) {
+                    const data = await checkResponse.json();
+                    sha = data.sha;
+                }
+            } catch (e) {
+                // File doesn't exist, which is fine
+            }
+
+            // Upload file
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Add submission: ${filename}`,
+                    content: base64Content,
+                    branch: GITHUB_BRANCH,
+                    ...(sha && { sha }) // Include SHA if file exists (for updates)
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to upload file to GitHub');
+            }
+
+            return await response.json();
+        }
+
+        function showMessage(type, text) {
+            messageDiv.className = `message ${type} show`;
+            messageDiv.innerHTML = text;
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
