@@ -125,11 +125,76 @@ async function detectAI(text, fileType = 'code or text') {
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2048,
       temperature: 0,
-      system: "You are an AI content detector specialized in analyzing student submissions. Your task is to identify AI-generated content with high precision and provide actionable insights for instructors.\n\nDETECTION STRATEGIES:\n\nFor Code Analysis:\n- Comment patterns: AI tends to write overly explanatory, formal comments\n- Variable naming: Perfect, descriptive names vs student shortcuts\n- Code structure: Too perfect organization vs learning artifacts\n- Error handling: Comprehensive vs minimal/missing\n- Documentation strings: Formal vs casual or missing\n- Code patterns: Generic best practices vs student experimentation\n\nFor Text Analysis:\n- Writing style: Formal/perfect vs casual/errors\n- Sentence patterns: Varied complex structures vs simpler patterns\n- Vocabulary: Advanced/consistent vs student-level\n- Personal voice: Generic vs individual personality\n- Transition phrases: Overuse of formal connectors\n- Learning indicators: Confusion/questions vs polished explanations\n\nAI Signatures:\n- Phrases like "As an AI", "I apologize", "Certainly! I'd be happy to"\n- "Here's a comprehensive/detailed/complete guide"\n- Overly structured responses (Firstly, Secondly, Thirdly...)\n- Perfect grammar with no typos or student-typical errors\n- Generic examples that lack specificity\n\nYour analysis should be thorough but fair - remember that good students can write well, and AI detection should look for multiple indicators together.",
+      system: `You are an AI content detector specialized in analyzing student submissions. Your task is to identify AI-generated content with high precision and provide actionable insights for instructors.
+
+DETECTION STRATEGIES:
+
+For Code Analysis:
+- Comment patterns: AI tends to write overly explanatory, formal comments
+- Variable naming: Perfect, descriptive names vs student shortcuts
+- Code structure: Too perfect organization vs learning artifacts
+- Error handling: Comprehensive vs minimal/missing
+- Documentation strings: Formal vs casual or missing
+- Code patterns: Generic best practices vs student experimentation
+
+For Text Analysis:
+- Writing style: Formal/perfect vs casual/errors
+- Sentence patterns: Varied complex structures vs simpler patterns
+- Vocabulary: Advanced/consistent vs student-level
+- Personal voice: Generic vs individual personality
+- Transition phrases: Overuse of formal connectors
+- Learning indicators: Confusion/questions vs polished explanations
+
+AI Signatures:
+- Phrases like "As an AI", "I apologize", "Certainly! I'd be happy to"
+- "Here's a comprehensive/detailed/complete guide"
+- Overly structured responses (Firstly, Secondly, Thirdly...)
+- Perfect grammar with no typos or student-typical errors
+- Generic examples that lack specificity
+
+Your analysis should be thorough but fair - remember that good students can write well, and AI detection should look for multiple indicators together.`,
       messages: [
         {
           role: 'user',
-          content: "Analyze this " + (fileType) + " submission for AI-generated content. Provide a detailed analysis.\n\nSUBMISSION (" + (totalLines) + " lines):\n" + (text) + "\n\nRespond in JSON format with:\n{\n"aiProbability": <number 0-100>,\n"confidence": "<low|medium|high>",\n"flaggedSections": [\n{\n"lines": "start-end",\n"reason": "specific reason this section appears AI-generated",\n"severity": "<low|medium|high>"\n}\n],\n"humanElements": [\n{\n"lines": "start-end", \n"reason": "specific reason this section appears human-written"\n}\n],\n"indicators": {\n"aiIndicators": ["list of AI patterns found"],\n"humanIndicators": ["list of human characteristics found"]\n},\n"analysis": {\n"codeQuality": "<assessment of code quality if applicable>",\n"writingStyle": "<assessment of writing style>",\n"consistency": "<assessment of consistency throughout>",\n"learningEvidence": "<evidence of learning process vs polished output>"\n},\n"recommendation": "<PASS|REVIEW|FAIL>",\n"reasoning": "detailed explanation of the overall assessment"\n}\n\nBe precise with line numbers. If the entire submission appears AI-generated, use "1-" + (totalLines). If you cannot determine specific sections, indicate "unable to determine" in the lines field.\n\nRespond ONLY with valid JSON, no additional text."
+          content: `Analyze this ${fileType} submission for AI-generated content. Provide a detailed analysis.
+
+SUBMISSION (${totalLines} lines):
+${text}
+
+Respond in JSON format with:
+{
+  "aiProbability": <number 0-100>,
+  "confidence": "<low|medium|high>",
+  "flaggedSections": [
+    {
+      "lines": "start-end",
+      "reason": "specific reason this section appears AI-generated",
+      "severity": "<low|medium|high>"
+    }
+  ],
+  "humanElements": [
+    {
+      "lines": "start-end", 
+      "reason": "specific reason this section appears human-written"
+    }
+  ],
+  "indicators": {
+    "aiIndicators": ["list of AI patterns found"],
+    "humanIndicators": ["list of human characteristics found"]
+  },
+  "analysis": {
+    "codeQuality": "<assessment of code quality if applicable>",
+    "writingStyle": "<assessment of writing style>",
+    "consistency": "<assessment of consistency throughout>",
+    "learningEvidence": "<evidence of learning process vs polished output>"
+  },
+  "recommendation": "<PASS|REVIEW|FAIL>",
+  "reasoning": "detailed explanation of the overall assessment"
+}
+
+Be precise with line numbers. If the entire submission appears AI-generated, use "1-${totalLines}". If you cannot determine specific sections, indicate "unable to determine" in the lines field.
+
+Respond ONLY with valid JSON, no additional text.`
         }
       ]
     });
@@ -141,7 +206,7 @@ async function detectAI(text, fileType = 'code or text') {
     try {
       // Try to extract JSON if wrapped in markdown code blocks
       let jsonText = responseText;
-      const jsonMatch = responseText.match(/"""json\s*([\s\S]*?)\s*"""/);
+      const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonMatch) {
         jsonText = jsonMatch[1];
       }
@@ -237,15 +302,15 @@ function formatResults(result) {
   output += 'ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ\n\n';
   
   // Overall assessment
-  output += "AI Probability: " + (result.aiProbability) + "% (" + (result.confidence) + " confidence)\n";
-  output += "Recommendation: " + (result.recommendation) + "\n";
-  output += "Status: " + (result.aiDetected ? 'ΓÜá∩╕Å  AI CONTENT DETECTED' : 'Γ£ô APPEARS HUMAN-WRITTEN') + "\n\n";
+  output += `AI Probability: ${result.aiProbability}% (${result.confidence} confidence)\n`;
+  output += `Recommendation: ${result.recommendation}\n`;
+  output += `Status: ${result.aiDetected ? 'ΓÜá∩╕Å  AI CONTENT DETECTED' : 'Γ£ô APPEARS HUMAN-WRITTEN'}\n\n`;
   
   // Pre-detection flags
   if (result.preDetectionFlags) {
     output += 'ΓÜá∩╕Å  OBVIOUS AI PATTERNS DETECTED:\n';
     result.preDetectionFlags.matches.forEach(match => {
-      output += "   - (match)\n";
+      output += `   - "${match}"\n`;
     });
     output += '\n';
   }
@@ -254,9 +319,9 @@ function formatResults(result) {
   if (result.flaggedSections && result.flaggedSections.length > 0) {
     output += '≡ƒÜ⌐ FLAGGED SECTIONS:\n';
     result.flaggedSections.forEach(section => {
-      output += "   Lines " + (section.lines) + ": " + (section.reason) + "\n";
+      output += `   Lines ${section.lines}: ${section.reason}\n`;
       if (section.severity) {
-        output += "   Severity: " + (section.severity) + "\n";
+        output += `   Severity: ${section.severity}\n`;
       }
     });
     output += '\n';
@@ -266,7 +331,7 @@ function formatResults(result) {
   if (result.humanElements && result.humanElements.length > 0) {
     output += 'Γ£ô HUMAN ELEMENTS:\n';
     result.humanElements.forEach(element => {
-      output += "   Lines " + (element.lines) + ": " + (element.reason) + "\n";
+      output += `   Lines ${element.lines}: ${element.reason}\n`;
     });
     output += '\n';
   }
@@ -276,7 +341,7 @@ function formatResults(result) {
     if (result.indicators.aiIndicators && result.indicators.aiIndicators.length > 0) {
       output += 'AI Indicators Found:\n';
       result.indicators.aiIndicators.forEach(indicator => {
-        output += "   ΓÇó " + (indicator) + "\n";
+        output += `   ΓÇó ${indicator}\n`;
       });
       output += '\n';
     }
@@ -284,7 +349,7 @@ function formatResults(result) {
     if (result.indicators.humanIndicators && result.indicators.humanIndicators.length > 0) {
       output += 'Human Indicators Found:\n';
       result.indicators.humanIndicators.forEach(indicator => {
-        output += "   ΓÇó " + (indicator) + "\n";
+        output += `   ΓÇó ${indicator}\n`;
       });
       output += '\n';
     }
@@ -295,7 +360,7 @@ function formatResults(result) {
     output += 'DETAILED ANALYSIS:\n';
     Object.entries(result.analysis).forEach(([key, value]) => {
       const label = key.replace(/([A-Z])/g, ' $1').trim();
-      output += "   " + (label) + ": " + (value) + "\n";
+      output += `   ${label}: ${value}\n`;
     });
     output += '\n';
   }
@@ -303,7 +368,7 @@ function formatResults(result) {
   // Reasoning
   if (result.reasoning) {
     output += 'REASONING:\n';
-    output += "   " + (result.reasoning) + "\n\n";
+    output += `   ${result.reasoning}\n\n`;
   }
   
   output += 'ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ\n';
@@ -328,7 +393,7 @@ async function main() {
   const filePath = args[0];
   
   if (!fs.existsSync(filePath)) {
-    console.error("Error: File not found: " + (filePath));
+    console.error(`Error: File not found: ${filePath}`);
     process.exit(1);
   }
 
@@ -342,7 +407,7 @@ async function main() {
   const fileExt = getFileExtension(filePath);
   const fileType = getFileTypeContext(fileExt);
   
-  console.error("Analyzing " + (fileType) + " submission (" + (submissionText.length) + " characters, " + (submissionText.split('\n').length) + " lines)...");
+  console.error(`Analyzing ${fileType} submission (${submissionText.length} characters, ${submissionText.split('\n').length} lines)...`);
   console.error('This may take a few seconds...\n');
   
   const result = await detectAI(submissionText, fileType);
@@ -359,7 +424,7 @@ async function main() {
 }
 
 // Run if called directly
-if (import.meta.url === "file://" + (process.argv[1])) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(error => {
     console.error('\nΓ¥î Fatal error:', error.message);
     process.exit(1);
