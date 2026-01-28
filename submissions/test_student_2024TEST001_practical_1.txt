@@ -1,0 +1,40 @@
+Student Name: Test Student
+Roll Number: 2024TEST001
+Batch: 2024
+Email: test@example.com
+Practical Number: 1
+Submission Date: 2026-01-28T10:17:29.123Z
+
+================== CODE/DOCUMENTATION ==================
+
+# Practical 1: Prompt Engineering Fundamentals
+# Student: Test Student
+# Roll: 2024TEST001
+
+# Temperature Experimentation Code
+from anthropic import Anthropic
+
+client = Anthropic(api_key="test-key")
+
+# Test different temperatures
+temperatures = [0.0, 0.5, 1.0]
+
+for temp in temperatures:
+    response = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=100,
+        temperature=temp,
+        messages=[{"role": "user", "content": "Write a creative story opening"}]
+    )
+    print(f"Temperature {temp}: {response.content[0].text}")
+
+# Learning Report:
+# - Temperature 0.0: Very consistent, deterministic responses
+# - Temperature 0.5: Good balance of creativity and coherence
+# - Temperature 1.0: Most creative but sometimes less coherent
+# 
+# I learned that temperature controls the randomness of outputs.
+# Lower values give predictable results, higher values give creative outputs.
+
+
+================== END OF SUBMISSION ==================
