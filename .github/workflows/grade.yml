@@ -173,11 +173,19 @@ jobs:
             // Handle file-based submission from push event
             else if (context.eventName === 'push') {
               const commits = context.payload.commits || [];
+              // Check both added and modified files
               const addedFiles = commits.flatMap(c => c.added || []);
-              const submissionFiles = addedFiles.filter(f => f.startsWith('submissions/'));
+              const modifiedFiles = commits.flatMap(c => c.modified || []);
+              const allFiles = [...addedFiles, ...modifiedFiles];
+              const submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
+              
+              console.log('Push event detected');
+              console.log('Added files:', addedFiles);
+              console.log('Modified files:', modifiedFiles);
+              console.log('Submission files found:', submissionFiles);
               
               if (submissionFiles.length === 0) {
-                console.log('No submission files found');
+                console.log('No submission files found in submissions/ folder');
                 core.setOutput('is_submission', 'false');
                 return;
               }
