@@ -843,608 +843,105 @@
     </div>
 
     <script>
-        // Rubric data
-        const rubrics = {
-
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            left: -9999px;
-        }
-
-        .file-input-label {
-            display: block;
-            padding: 12px 15px;
-            background: #f5f5f5;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .file-input-label:hover {
-            background: #e8e8e8;
-            border-color: #667eea;
-        }
-
-        .file-name {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .submit-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .required {
-            color: #e74c3c;
-        }
-
-        .info-box {
-            background: #f0f7ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 4px;
-        }
-
-        .info-box p {
-            color: #555;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 25px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🎓 AI Assignment Auto-Grader</h1>
-        <p class="tagline">Instant feedback with AI usage detection</p>
-    </div>
-
-    <div class="container">
-        <div class="ai-disclosure">
-            <h3>🤖 AI Detection Notice</h3>
-            <p>Your submission will be analyzed for AI-generated content. We use advanced detection to ensure academic integrity while recognizing appropriate AI tool usage (research, debugging, learning).</p>
-        </div>
-
-        <div class="educational-message">
-            <p>💡 "Learning to use AI tools effectively is important, but understanding concepts yourself is crucial. This detector helps ensure you're learning, not just copying."</p>
-        </div>
-
-        <h2 style="margin-bottom: 20px; color: var(--text-dark);">🔍 Check Your Grade</h2>
-        <p style="margin-bottom: 30px; color: var(--text-light);">Need to submit an assignment? Visit the <a href="submit.html" style="color: var(--primary-blue); font-weight: 600;">Submission Portal</a></p>
-
-        <form id="submissionForm">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="studentName">Student Name</label>
-                    <input type="text" id="studentName" placeholder="Enter your full name">
-                </div>
-                <div class="form-group">
-                    <label for="rollNumber">Roll Number</label>
-                    <input type="text" id="rollNumber" placeholder="e.g., 2024CS001">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="assignment">Assignment Number (Optional)</label>
-                <select id="assignment">
-                    <option value="">All Assignments</option>
-                    <option value="1">Practical 1</option>
-                    <option value="2">Practical 2</option>
-                    <option value="3">Practical 3</option>
-                    <option value="4">Practical 4</option>
-                    <option value="5">Practical 5</option>
-                </select>
-            </div>
-
-            <button type="submit" class="submit-btn">🔍 Search My Grades</button>
-        </form>
-    </div>
-
-    <script>
-        // File upload handler
-        document.getElementById('fileUpload').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || '';
-            const fileNameDisplay = document.getElementById('fileName');
-            if (fileName) {
-                fileNameDisplay.textContent = `📄 Selected: ${fileName}`;
-            } else {
-                fileNameDisplay.textContent = '';
-            }
-        });
-
-        // Form submission handler
+        // Grade search functionality
         document.getElementById('submissionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const submitBtn = document.getElementById('submitBtn');
-            const messageDiv = document.getElementById('message');
+            const studentName = document.getElementById('studentName').value.trim();
+            const rollNumber = document.getElementById('rollNumber').value.trim();
+            const assignment = document.getElementById('assignment').value;
             
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            if (!studentName && !rollNumber) {
+                alert('Please enter either Student Name or Roll Number');
+                return;
+            }
             
-            // Get form data
-            const formData = {
-                studentName: document.getElementById('studentName').value,
-                studentEmail: document.getElementById('studentEmail').value,
-                studentId: document.getElementById('studentId').value,
-                practicalNumber: document.getElementById('practicalNumber').value,
-                submission: document.getElementById('submission').value,
-                timestamp: new Date().toISOString()
-    <script>
-        // Rubric data (simplified - in production, load from rubrics folder)
-        const rubrics = {
-            '1': { title: 'Introduction to Programming', totalPoints: 100, criteria: [
-                { name: 'Code Correctness', points: 30 },
-                { name: 'Code Quality', points: 25 },
-                { name: 'Documentation', points: 20 },
-                { name: 'Testing', points: 15 },
-                { name: 'Creativity', points: 10 }
-            ]},
-            '2': { title: 'Data Structures', totalPoints: 100, criteria: [
-                { name: 'Algorithm Efficiency', points: 35 },
-                { name: 'Implementation', points: 30 },
-                { name: 'Code Quality', points: 20 },
-                { name: 'Documentation', points: 15 }
-            ]},
-            '3': { title: 'Object-Oriented Programming', totalPoints: 100, criteria: [
-                { name: 'OOP Principles', points: 35 },
-                { name: 'Class Design', points: 30 },
-                { name: 'Code Quality', points: 20 },
-                { name: 'Documentation', points: 15 }
-            ]},
-            '4': { title: 'Database Design', totalPoints: 100, criteria: [
-                { name: 'Schema Design', points: 35 },
-                { name: 'Query Optimization', points: 30 },
-                { name: 'Normalization', points: 20 },
-                { name: 'Documentation', points: 15 }
-            ]},
-            '5': { title: 'Web Development', totalPoints: 100, criteria: [
-                { name: 'Functionality', points: 35 },
-                { name: 'UI/UX Design', points: 25 },
-                { name: 'Code Quality', points: 25 },
-                { name: 'Responsiveness', points: 15 }
-            ]},
-            '6': { title: 'API Development', totalPoints: 100, criteria: [
-                { name: 'API Design', points: 35 },
-                { name: 'Security', points: 25 },
-                { name: 'Documentation', points: 25 },
-                { name: 'Error Handling', points: 15 }
-            ]},
-            '7': { title: 'Final Project', totalPoints: 100, criteria: [
-                { name: 'Functionality', points: 30 },
-                { name: 'Code Quality', points: 25 },
-                { name: 'Innovation', points: 25 },
-                { name: 'Documentation', points: 20 }
-            ]}
-        };
-
-        // DOM Elements
-        const form = document.getElementById('submissionForm');
-        const fileInput = document.getElementById('fileInput');
-        const fileUploadArea = document.getElementById('fileUploadArea');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const fileRemove = document.getElementById('fileRemove');
-        const practicalNumber = document.getElementById('practicalNumber');
-        const rubricPreview = document.getElementById('rubricPreview');
-        const rubricCriteria = document.getElementById('rubricCriteria');
-        const submitBtn = document.getElementById('submitBtn');
-        const progressBar = document.getElementById('progressBar');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const resultsModal = document.getElementById('resultsModal');
-        const closeModal = document.getElementById('closeModal');
-        const newSubmission = document.getElementById('newSubmission');
-
-        let selectedFile = null;
-
-        // File upload handling
-        fileUploadArea.addEventListener('click', () => fileInput.click());
-
-        fileUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUploadArea.classList.add('dragover');
-        });
-
-        fileUploadArea.addEventListener('dragleave', () => {
-            fileUploadArea.classList.remove('dragover');
-        });
-
-        fileUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
-        });
-
-        fileRemove.addEventListener('click', () => {
-            selectedFile = null;
-            fileInput.value = '';
-            fileInfo.classList.remove('active');
-            fileUploadArea.style.display = 'block';
-        });
-
-        function handleFile(file) {
-            // Validate file size (10MB)
-            const maxSize = 10 * 1024 * 1024;
-            if (file.size > maxSize) {
-                alert('File size exceeds 10MB limit. Please choose a smaller file.');
-                return;
-            }
-
-            // Validate file type
-            const allowedTypes = ['.txt', '.py', '.md', '.pdf', '.zip'];
-            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
-            if (!allowedTypes.includes(fileExt)) {
-                alert('Invalid file type. Allowed: ' + allowedTypes.join(', '));
-                return;
-            }
-
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileSize.textContent = formatFileSize(file.size);
-            fileInfo.classList.add('active');
-            fileUploadArea.style.display = 'none';
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        // Rubric preview
-        practicalNumber.addEventListener('change', (e) => {
-            const practical = e.target.value;
-            if (practical && rubrics[practical]) {
-                showRubric(rubrics[practical]);
-            } else {
-                rubricPreview.classList.remove('active');
-            }
-        });
-
-        function showRubric(rubric) {
-            rubricCriteria.innerHTML = '';
-            rubric.criteria.forEach(criterion => {
-                const item = document.createElement('div');
-                item.className = 'rubric-item';
-                item.innerHTML = `
-                    <span class="rubric-item-name">${criterion.name}</span>
-                    <span class="rubric-item-points">${criterion.points} pts</span>
-                `;
-                rubricCriteria.appendChild(item);
-            });
-            rubricPreview.classList.add('active');
-        }
-
-        // Form submission
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            if (!selectedFile) {
-                alert('Please upload a file');
-                return;
-            }
-
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
-
-            // Show progress bar
-            progressBar.classList.add('active');
-            updateProgress(0, 'Uploading file...');
-
             try {
-                // Read file content
-                const fileContent = await readFileContent(selectedFile);
+                // Fetch grades.csv
+                const response = await fetch('https://raw.githubusercontent.com/dayashankar-ai/ai-assignment-grader/main/results/grades.csv');
+                const csvText = await response.text();
+                const lines = csvText.split('\n').filter(line => line.trim());
                 
-                updateProgress(30, 'Creating submission...');
-
-                // Prepare submission data
-                const formData = {
-                    studentName: document.getElementById('studentName').value,
-                    rollNumber: document.getElementById('rollNumber').value,
-                    batch: document.getElementById('batch').value,
-                    year: document.getElementById('year').value,
-                    practicalNumber: document.getElementById('practicalNumber').value,
-                    fileName: selectedFile.name,
-                    fileContent: fileContent,
-                    timestamp: new Date().toISOString()
-                };
-
-                updateProgress(50, 'Submitting to GitHub...');
-
-                // In production, this would create a GitHub issue to trigger the workflow
-                // For now, simulate the submission and show mock results
-                await simulateSubmission(formData);
-
-                updateProgress(100, 'Complete!');
-
-                // Show results after a delay
-                setTimeout(() => {
-                    progressBar.classList.remove('active');
-                    displayResults(mockResults);
-                }, 1000);
-
+                // Skip header
+                const results = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length < 11) continue;
+                    
+                    // Match by name or roll number
+                    const matchName = !studentName || cols[1].toLowerCase().includes(studentName.toLowerCase());
+                    const matchRoll = !rollNumber || cols[2].toLowerCase().includes(rollNumber.toLowerCase());
+                    const matchAssignment = !assignment || cols[4] === assignment;
+                    
+                    if (matchName && matchRoll && matchAssignment) {
+                        results.push({
+                            timestamp: cols[0],
+                            name: cols[1],
+                            id: cols[2],
+                            email: cols[3],
+                            practical: cols[4],
+                            score: cols[5],
+                            maxScore: cols[6],
+                            grade: cols[7],
+                            aiDetected: cols[8],
+                            aiConfidence: cols[9],
+                            feedback: cols[10]
+                        });
+                    }
+                }
+                
+                if (results.length === 0) {
+                    alert('No grades found for the given criteria');
+                } else {
+                    displayResults(results);
+                }
+                
             } catch (error) {
-                console.error('Submission error:', error);
-                alert('Submission failed. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Assignment';
-                progressBar.classList.remove('active');
+                console.error('Error fetching grades:', error);
+                alert('Error loading grades. Please try again later.');
             }
         });
-
-        function readFileContent(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = (e) => reject(e);
-                reader.readAsText(file);
-            });
-        }
-
-        function updateProgress(percent, text) {
-            progressFill.style.width = percent + '%';
-            progressText.textContent = text;
-        }
-
-        async function simulateSubmission(data) {
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // In production, create GitHub issue:
-            /*
-            const issueBody = `
-**Student Name:** ${data.studentName}
-**Roll Number:** ${data.rollNumber}
-**Batch:** ${data.batch}
-**Year:** ${data.year}
-**Practical Number:** ${data.practicalNumber}
-
-**Submission:**
-\`\`\`
-${data.fileContent}
-\`\`\`
-            `;
-
-            const response = await fetch('https://api.github.com/repos/YOUR_REPO/issues', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'token YOUR_TOKEN'
-                },
-                body: JSON.stringify({
-                    title: `Submission: ${data.studentName} - Practical ${data.practicalNumber}`,
-                    body: issueBody,
-                    labels: ['submission']
-                })
-            });
-            */
-        }
-
-        // Mock results for demonstration
-        const mockResults = {
-            finalScore: 75,
-            baseScore: 85,
-            aiPenalty: -10,
-            aiUsagePercent: 35,
-            gradeLetter: 'C',
-            aiPenaltyInfo: {
-                severity: 'low',
-                description: 'Moderate AI use - minor penalty'
-            },
-            strengths: [
-                'Well-structured code with clear logic',
-                'Good variable naming conventions',
-                'Proper error handling implemented'
-            ],
-            improvements: [
-                'Add more inline comments to explain complex sections',
-                'Consider edge cases in input validation',
-                'Improve code efficiency in loops'
-            ],
-            overallFeedback: 'Good work overall! Your solution demonstrates a solid understanding of the core concepts. The code is functional and mostly well-written. However, there are signs of AI assistance in certain sections, particularly in the documentation style and error handling patterns. Focus on developing your own coding style and understanding the "why" behind design decisions.',
-            flaggedSections: [
-                { line: '15-22', reason: 'Comprehensive docstring pattern typical of AI', code: 'def calculate(...):\n    """Detailed docstring..."""' },
-                { line: '45-50', reason: 'Formal error handling structure', code: 'try:\n    ...\nexcept Exception as e:\n    raise ValueError(...)' }
-            ]
-        };
-
-        // Display results
+        
         function displayResults(results) {
-            // Final score
-            document.getElementById('finalScore').textContent = results.finalScore + '/100';
-
-            // Score comparison
-            const scoreComparison = document.getElementById('scoreComparison');
-            scoreComparison.innerHTML = `
-                <div class="score-item">
-                    <div class="score-item-label">Base Score</div>
-                    <div class="score-item-value base">${results.baseScore}</div>
-                </div>
-                <div class="score-item">
-                    <div class="score-item-label">AI Penalty</div>
-                    <div class="score-item-value penalty">${results.aiPenalty}</div>
-                </div>
-            `;
-
-            // AI usage
-            const aiPercent = results.aiUsagePercent;
-            const aiClass = aiPercent <= 20 ? 'low' : aiPercent <= 60 ? 'medium' : 'high';
+            const container = document.querySelector('.container');
+            let html = '<div style=\"background: white; padding: 30px; border-radius: 12px; margin-top: 30px;\">';
+            html += '<h2 style=\"margin-bottom: 20px; color: var(--text-dark);\">📊 Your Grades</h2>';
             
-            const aiPercentageEl = document.getElementById('aiPercentage');
-            aiPercentageEl.textContent = aiPercent + '%';
-            aiPercentageEl.className = 'ai-percentage ' + aiClass;
-
-            const aiProgressFill = document.getElementById('aiProgressFill');
-            aiProgressFill.className = 'ai-progress-fill ' + aiClass;
-            setTimeout(() => {
-                aiProgressFill.style.width = aiPercent + '%';
-                aiProgressFill.textContent = aiPercent + '% AI Detected';
-            }, 500);
-
-            // AI penalty note
-            const aiPenaltyNote = document.getElementById('aiPenaltyNote');
-            let penaltyClass, penaltyText;
-            if (aiPercent <= 20) {
-                penaltyClass = 'none';
-                penaltyText = '✅ Within acceptable limits. No penalty applied.';
-            } else if (aiPercent <= 40) {
-                penaltyClass = 'low';
-                penaltyText = '⚠️ ' + results.aiPenaltyInfo.description;
-            } else if (aiPercent <= 80) {
-                penaltyClass = 'medium';
-                penaltyText = '🚨 ' + results.aiPenaltyInfo.description + '. Please review our AI usage policy.';
-            } else {
-                penaltyClass = 'high';
-                penaltyText = '🚫 Academic integrity violation. Your instructor will contact you.';
-            }
-            aiPenaltyNote.className = 'ai-penalty-note ' + penaltyClass;
-            aiPenaltyNote.textContent = penaltyText;
-
-            // Strengths
-            const strengthsList = document.getElementById('strengthsList');
-            strengthsList.innerHTML = '';
-            results.strengths.forEach(strength => {
-                const li = document.createElement('li');
-                li.textContent = strength;
-                strengthsList.appendChild(li);
-            });
-
-            // Improvements
-            const improvementsList = document.getElementById('improvementsList');
-            improvementsList.innerHTML = '';
-            results.improvements.forEach(improvement => {
-                const li = document.createElement('li');
-                li.textContent = improvement;
-                improvementsList.appendChild(li);
-            });
-
-            // Overall feedback
-            document.getElementById('overallFeedback').textContent = results.overallFeedback;
-
-            // Flagged sections
-            const flaggedContainer = document.getElementById('flaggedSectionsContainer');
-            if (results.flaggedSections && results.flaggedSections.length > 0) {
-                let flaggedHTML = '<div class="flagged-sections"><h4>⚠️ Flagged Code Sections</h4>';
-                results.flaggedSections.forEach(section => {
-                    flaggedHTML += `
-                        <div class="flagged-item">
-                            <div class="flagged-item-header">Lines ${section.line}: ${section.reason}</div>
-                            <div class="flagged-item-code">${section.code}</div>
+            results.forEach(result => {
+                const gradeColor = result.grade === 'A' || result.grade === 'B' ? 'var(--success-green)' :
+                                   result.grade === 'C' ? 'var(--warning-yellow)' : 'var(--danger-red)';
+                
+                html += 
+                    <div style=\"border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px;\">
+                        <h3 style=\"color: var(--primary-blue); margin-bottom: 15px;\">Practical </h3>
+                        <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;\">
+                            <div>
+                                <strong>Student:</strong> <br>
+                                <strong>ID:</strong> <br>
+                                <strong>Email:</strong> 
+                            </div>
+                            <div>
+                                <strong>Score:</strong> <span style=\"font-size: 24px; color: ;\">/</span><br>
+                                <strong>Grade:</strong> <span style=\"font-size: 24px; font-weight: bold; color: ;\"></span><br>
+                                <strong>AI Detected:</strong>  ()
+                            </div>
                         </div>
-                    `;
-                });
-                flaggedHTML += '</div>';
-                flaggedContainer.innerHTML = flaggedHTML;
-            } else {
-                flaggedContainer.innerHTML = '';
-            }
-
-            // Show modal
-            resultsModal.classList.add('active');
-
-            // Reset form
-            form.reset();
-            selectedFile = null;
-            fileInfo.classList.remove('active');
-            fileUploadArea.style.display = 'block';
-            rubricPreview.classList.remove('active');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Assignment';
+                        <div style=\"background: var(--primary-light); padding: 15px; border-radius: 6px;\">
+                            <strong>📝 Feedback:</strong><br>
+                            <p style=\"margin-top: 10px; line-height: 1.6;\"></p>
+                        </div>
+                        <div style=\"margin-top: 10px; font-size: 12px; color: var(--text-light);\">
+                            Submitted: 
+                        </div>
+                    </div>
+                ;
+            });
+            
+            html += '<button onclick=\"location.reload()\" style=\"margin-top: 20px; padding: 12px 24px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;\">🔍 Search Again</button>';
+            html += '</div>';
+            
+            container.innerHTML += html;
         }
-
-        // Modal controls
-        closeModal.addEventListener('click', () => {
-            resultsModal.classList.remove('active');
-        });
-
-        newSubmission.addEventListener('click', () => {
-            resultsModal.classList.remove('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Close modal on outside click
-        resultsModal.addEventListener('click', (e) => {
-            if (e.target === resultsModal) {
-                resultsModal.classList.remove('active');
-            }
-        });
     </script>
 </body>
 </html>
