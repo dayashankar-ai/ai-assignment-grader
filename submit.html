@@ -94,6 +94,7 @@
             cursor: pointer;
             transition: all 0.3s;
             background: #f8f9ff;
+            position: relative;
         }
 
         .file-upload:hover {
@@ -108,18 +109,27 @@
         }
 
         .file-upload input[type="file"] {
-            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
         }
 
         .file-icon {
             font-size: 3em;
             margin-bottom: 15px;
+            pointer-events: none;
         }
 
         .file-upload p {
             font-size: 1.1em;
             color: #666;
             margin-bottom: 10px;
+            pointer-events: none;
         }
 
         .file-info {
@@ -372,28 +382,7 @@
 
         let selectedFile = null;
 
-        // File upload interactions
-        fileUpload.addEventListener('click', () => fileInput.click());
-
-        fileUpload.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUpload.classList.add('drag-over');
-        });
-
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.classList.remove('drag-over');
-        });
-
-        fileUpload.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUpload.classList.remove('drag-over');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                handleFileSelect(files[0]);
-            }
-        });
-
+        // File upload interactions - Simplified and more robust
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 handleFileSelect(e.target.files[0]);
