@@ -1,0 +1,71 @@
+STUDENT_NAME: Alice Johnson
+STUDENT_ID: 2024CS008
+STUDENT_EMAIL: alice.johnson@example.com
+BATCH: 2024
+PRACTICAL: 1
+SUBMISSION_DATE: 2026-01-29T12:43:58.069Z
+
+================== CODE/DOCUMENTATION ==================
+
+STUDENT_NAME: Alice Johnson
+STUDENT_ID: 2024CS001
+STUDENT_EMAIL: alice.johnson@example.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This practical demonstrates comprehensive understanding of prompt engineering principles, including systematic testing, refinement strategies, and analysis of LLM behavior.
+
+## Part 1: Simple Prompts
+
+### Prompt 1: Information Extraction
+**Prompt:** "Extract and format the key information from this text: 'Dr. Sarah Martinez, aged 45, works as a Chief AI Researcher at TechCorp in San Francisco, specializing in natural language processing.'"
+
+**Response:** The LLM successfully extracted:
+- Name: Dr. Sarah Martinez
+- Age: 45
+- Position: Chief AI Researcher
+- Company: TechCorp
+- Location: San Francisco
+- Specialization: Natural Language Processing
+
+**Analysis:** The prompt's clarity and explicit instruction to "extract and format" guided the model to provide structured output.
+
+### Prompt 2: Text Summarization
+**Prompt:** "Summarize the following article about quantum computing in exactly 3 sentences, focusing on practical applications."
+
+**Response:** Received a precise 3-sentence summary highlighting practical quantum computing applications in cryptography, drug discovery, and optimization problems.
+
+**Analysis:** Multiple constraints (sentence count, focus area) were successfully applied.
+
+## Part 2: Prompt Refinement
+
+### Initial Prompt
+"Tell me about machine learning"
+
+**Issues:** Too vague, no scope definition, unclear audience level.
+
+### Refined Prompt
+"Explain supervised learning in machine learning to a computer science undergraduate student. Include: 1) Core concept, 2) Three examples, 3) Key differences from unsupervised learning. Use bullet points, keep under 200 words."
+
+**Improvements:** Added audience, scope, structure, format, and length constraints.
+
+## Part 3: Testing Approaches
+
+### Experiment 1: Temperature Impact
+Tested how different temperature settings affect outputs.
+
+**Observations:**
+- Lower temperature: More focused, factual responses
+- Higher temperature: More creative, diverse responses
+
+### Experiment 2: Chain-of-Thought
+Requesting step-by-step reasoning improves accuracy and provides transparency.
+
+## Conclusion
+Effective prompt engineering requires clear communication, appropriate specificity, and iterative refinement.
+
+
+================== END OF SUBMISSION ==================
