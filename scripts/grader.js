@@ -87,7 +87,7 @@ async function gradeAssignment(submissionText, rubric, aiResult, practicalNumber
   while (attempts < maxAttempts) {
     try {
       const message = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-5',
         max_tokens: 2048,
         temperature: 0,
         messages: [{ role: 'user', content: prompt }]
@@ -296,7 +296,7 @@ async function main() {
 
   // Perform grading
   console.error('[5/5] Grading assignment with Claude API');
-  console.error('Model: claude-3-5-sonnet-20241022');
+  console.error('Model: claude-sonnet-4-5');
   console.error('This may take 30-60 seconds...');
   
   const result = await gradeAssignment(submissionText, rubric, aiResult, practicalNumber);
