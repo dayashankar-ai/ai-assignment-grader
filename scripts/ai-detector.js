@@ -98,15 +98,58 @@ function formatResults(result) {
 }
 
 async function main() {
+  console.error('='.repeat(50));
+  console.error('AI CONTENT DETECTOR - Starting analysis');
+  console.error('='.repeat(50));
+  
   const args = process.argv.slice(2);
+  
+  // Validate arguments
+  if (args.length < 1) {
+    console.error('ERROR: Missing submission file');
+    console.error('Usage: node ai-detector.js <submission-file>');
+    console.error('Example: node ai-detector.js submissions/test.txt');
+    process.exit(1);
+  }
+  
   const filePath = args[0];
 
-  const submissionText = fs.readFileSync(filePath, 'utf-8');
+  // Validate file exists
+  if (!fs.existsSync(filePath)) {
+    console.error('ERROR: File not found: ' + filePath);
+    process.exit(1);
+  }
 
-  console.error('Detecting AI...');
+  // Read submission
+  console.error('[1/2] Reading submission file: ' + filePath);
+  const submissionText = fs.readFileSync(filePath, 'utf-8');
+  
+  if (submissionText.trim().length === 0) {
+    console.error('ERROR: Submission file is empty');
+    process.exit(1);
+  }
+  
+  if (submissionText.length < 100) {
+    console.error('WARNING: Submission is very short (' + submissionText.length + ' chars). Detection may be unreliable.');
+  }
+  
+  console.error('✓ Submission loaded (' + submissionText.length + ' characters)');
+
+  // Detect AI content
+  console.error('[2/2] Analyzing content with Claude API');
+  console.error('Model: claude-3-5-sonnet-20241022');
+  console.error('This may take 20-30 seconds...');
+  
   const result = await detectAI(submissionText);
   
-  // Output JSON for workflow
+  // Add metadata
+  result.timestamp = new Date().toISOString();
+  result.submissionLength = submissionText.length;
+  
+  console.error('✓ Analysis completed successfully');
+  console.error('='.repeat(50));
+  
+  // Output JSON for workflow (stdout)
   console.log(JSON.stringify(result, null, 2));
   
   // Display formatted results to stderr
@@ -114,7 +157,27 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('Error:', error.message);
+  console.error('\n' + '='.repeat(50));
+  console.error('FATAL ERROR: AI detection failed');
+  console.error('='.repeat(50));
+  console.error('Error type: ' + error.name);
+  console.error('Message: ' + error.message);
+  if (error.stack) {
+    console.error('\nStack trace:');
+    console.error(error.stack);
+  }
+  console.error('='.repeat(50));
+  
+  // Return minimal valid JSON to prevent workflow breakage
+  console.log(JSON.stringify({
+    aiProbability: 0,
+    confidence: 'error',
+    aiDetected: false,
+    recommendation: 'AI detection failed - proceeding with grading',
+    indicators: ['Error during detection: ' + error.message],
+    error: true
+  }, null, 2));
+  
   process.exit(1);
 });
 

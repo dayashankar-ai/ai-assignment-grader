@@ -219,27 +219,86 @@ function loadRubric(practicalNumber) {
 }
 
 async function main() {
+  console.error('='.repeat(50));
+  console.error('AI ASSIGNMENT GRADER - Starting grading process');
+  console.error('='.repeat(50));
+  
   const args = process.argv.slice(2);
+  
+  // Validate command line arguments
+  if (args.length < 2) {
+    console.error('ERROR: Insufficient arguments');
+    console.error('Usage: node grader.js <submission-file> <practical-number> [ai-result-file]');
+    console.error('Example: node grader.js submissions/test.txt 1 ai-result.json');
+    process.exit(1);
+  }
+  
   const filePath = args[0];
   const practicalNumber = args[1];
   const aiResultFile = args[2] || 'ai-result.json';
 
-  const submissionText = fs.readFileSync(filePath, 'utf-8');
-  const rubric = loadRubric(practicalNumber);
-  const studentInfo = extractStudentInfo(submissionText);
+  // Validate file paths
+  if (!fs.existsSync(filePath)) {
+    console.error('ERROR: Submission file not found: ' + filePath);
+    process.exit(1);
+  }
 
-  // Load AI results if available
+  // Read and validate submission
+  console.error('[1/5] Reading submission file: ' + filePath);
+  const submissionText = fs.readFileSync(filePath, 'utf-8');
+  
+  if (submissionText.trim().length === 0) {
+    console.error('ERROR: Submission file is empty');
+    process.exit(1);
+  }
+  
+  if (submissionText.length > 50000) {
+    console.error('WARNING: Submission is very long (' + submissionText.length + ' chars). This may affect grading quality.');
+  }
+  
+  console.error('✓ Submission loaded (' + submissionText.length + ' characters)');
+
+  // Load rubric
+  console.error('[2/5] Loading rubric for practical ' + practicalNumber);
+  try {
+    const rubric = loadRubric(practicalNumber);
+    console.error('✓ Rubric loaded: ' + rubric.title + ' (' + rubric.totalPoints + ' points)');
+  } catch (e) {
+    console.error('ERROR: Failed to load rubric for practical ' + practicalNumber);
+    console.error('Available rubrics: practical_1.json through practical_7.json');
+    process.exit(1);
+  }
+  const rubric = loadRubric(practicalNumber);
+
+  // Extract student information
+  console.error('[3/5] Extracting student information');
+  const studentInfo = extractStudentInfo(submissionText);
+  console.error('✓ Student: ' + (studentInfo.studentName || 'Not found in header'));
+  console.error('  ID: ' + (studentInfo.studentId || 'Not found'));
+  console.error('  Email: ' + (studentInfo.studentEmail || 'Not found'));
+
+  // Load AI detection results
+  console.error('[4/5] Loading AI detection results');
   let aiResult = null;
   if (fs.existsSync(aiResultFile)) {
     try {
       aiResult = JSON.parse(fs.readFileSync(aiResultFile, 'utf-8'));
-      console.error('AI detection: ' + aiResult.aiProbability + '% probability');
+      console.error('✓ AI detection: ' + aiResult.aiProbability + '% probability (' + aiResult.confidence + ' confidence)');
+      if (aiResult.aiDetected) {
+        console.error('⚠ WARNING: High AI usage detected - penalties will be applied');
+      }
     } catch (e) {
-      console.error('Warning: Could not load AI results');
+      console.error('⚠ Warning: Could not parse AI results file');
     }
+  } else {
+    console.error('⚠ AI results file not found - proceeding without AI detection');
   }
 
-  console.error('Grading with rubric...');
+  // Perform grading
+  console.error('[5/5] Grading assignment with Claude API');
+  console.error('Model: claude-3-5-sonnet-20241022');
+  console.error('This may take 30-60 seconds...');
+  
   const result = await gradeAssignment(submissionText, rubric, aiResult);
   
   // Add student info to result
@@ -248,8 +307,13 @@ async function main() {
   result.studentEmail = studentInfo.studentEmail || 'Unknown';
   result.batch = studentInfo.batch || 'Unknown';
   result.practicalNumber = studentInfo.practical || practicalNumber;
+  result.submissionLength = submissionText.length;
+  result.timestamp = new Date().toISOString();
   
-  // Output JSON for workflow
+  console.error('✓ Grading completed successfully');
+  console.error('='.repeat(50));
+  
+  // Output JSON for workflow (stdout)
   console.log(JSON.stringify(result, null, 2));
   
   // Display formatted results to stderr
@@ -257,7 +321,16 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('Error:', error.message);
+  console.error('\n' + '='.repeat(50));
+  console.error('FATAL ERROR: Grading process failed');
+  console.error('='.repeat(50));
+  console.error('Error type: ' + error.name);
+  console.error('Message: ' + error.message);
+  if (error.stack) {
+    console.error('\nStack trace:');
+    console.error(error.stack);
+  }
+  console.error('='.repeat(50));
   process.exit(1);
 });
 
