@@ -1,0 +1,73 @@
+STUDENT_NAME: Workflow Test Student
+STUDENT_ID: 2024WF001
+STUDENT_EMAIL: workflow.test@example.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Temperature Monitoring System
+
+This is my implementation of the temperature monitoring system for Practical 1.
+
+## Code
+
+```python
+import datetime
+import statistics
+
+class TemperatureMonitor:
+    def __init__(self):
+        self.readings = []
+        self.timestamps = []
+        print("Monitor started!")
+    
+    def add_reading(self, temp, timestamp=None):
+        if timestamp is None:
+            timestamp = datetime.datetime.now()
+        self.readings.append(temp)
+        self.timestamps.append(timestamp)
+        print(f"Added: {temp}°C")
+    
+    def get_average(self):
+        if not self.readings:
+            return 0
+        return statistics.mean(self.readings)
+    
+    def get_max(self):
+        return max(self.readings) if self.readings else 0
+    
+    def get_min(self):
+        return min(self.readings) if self.readings else 0
+    
+    def get_report(self):
+        return {
+            'average': self.get_average(),
+            'max': self.get_max(),
+            'min': self.get_min(),
+            'total': len(self.readings)
+        }
+
+# Testing
+if __name__ == "__main__":
+    monitor = TemperatureMonitor()
+    
+    # Add test data
+    monitor.add_reading(22.5)
+    monitor.add_reading(23.1)
+    monitor.add_reading(21.8)
+    monitor.add_reading(24.2)
+    
+    report = monitor.get_report()
+    print("\n=== Temperature Report ===")
+    print(f"Average: {report['average']:.2f}°C")
+    print(f"Max: {report['max']:.2f}°C")
+    print(f"Min: {report['min']:.2f}°C")
+    print(f"Total readings: {report['total']}")
+```
+
+## What I learned
+
+I learned how to use the statistics module and datetime in Python. Had some trouble with empty lists at first but fixed it with if statements.
+
+## Testing
+
+Tested with various temperatures and it works correctly!
