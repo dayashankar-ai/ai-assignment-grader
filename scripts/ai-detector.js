@@ -30,7 +30,7 @@ async function detectAI(submissionText) {
   while (attempts < maxAttempts) {
     try {
       const message = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20240620',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 2048,
         temperature: 0,
         messages: [{ role: 'user', content: prompt }]
@@ -137,7 +137,7 @@ async function main() {
 
   // Detect AI content
   console.error('[2/2] Analyzing content with Claude API');
-  console.error('Model: claude-3-5-sonnet-20240620');
+  console.error('Model: claude-3-5-sonnet-20241022');
   console.error('This may take 20-30 seconds...');
   
   const result = await detectAI(submissionText);
