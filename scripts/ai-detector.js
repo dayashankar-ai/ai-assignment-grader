@@ -56,6 +56,24 @@ async function detectAI(submissionText) {
   return result;
 }
 
+function formatResults(result) {
+  let output = '\n========================================\n';
+  output += 'AI DETECTION RESULTS\n';
+  output += '========================================\n';
+  output += 'AI Probability: ' + result.aiProbability + '%\n';
+  output += 'Confidence: ' + result.confidence + '\n';
+  output += 'Status: ' + (result.aiDetected ? 'AI DETECTED' : 'Appears Human') + '\n';
+  output += 'Recommendation: ' + result.recommendation + '\n';
+  
+  if (result.indicators && result.indicators.length > 0) {
+    output += '\nIndicators Found:\n';
+    result.indicators.forEach(ind => output += '- ' + ind + '\n');
+  }
+  
+  output += '========================================\n';
+  return output;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const filePath = args[0];
@@ -65,7 +83,11 @@ async function main() {
   console.error('Detecting AI...');
   const result = await detectAI(submissionText);
   
+  // Output JSON for workflow
   console.log(JSON.stringify(result, null, 2));
+  
+  // Display formatted results to stderr
+  console.error(formatResults(result));
 }
 
 main().catch(error => {

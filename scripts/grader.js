@@ -78,7 +78,47 @@ async function gradeAssignment(submissionText, rubric, aiResult) {
   }
 
   result.gradeLetter = calculateGradeLetter(result.finalScore);
+  result.practicalNumber = practicalNumber;
+  
   return result;
+}
+
+function formatResults(result) {
+  let output = '\n========================================\n';
+  output += 'GRADING RESULTS\n';
+  output += '========================================\n';
+  output += 'Base Score: ' + result.baseScore + '/100\n';
+  if (result.aiPenalty !== 0) {
+    output += 'AI Penalty: ' + result.aiPenalty + ' points (' + result.aiPenaltySeverity + ')\n';
+  }
+  output += 'Final Score: ' + result.finalScore + '/100\n';
+  output += 'Grade: ' + result.gradeLetter + '\n\n';
+  
+  if (result.criteria && result.criteria.length > 0) {
+    output += 'Criteria Breakdown:\n';
+    result.criteria.forEach(c => {
+      output += '- ' + c.name + ': ' + c.score + '/' + c.maxScore + '\n';
+      output += '  ' + c.feedback + '\n';
+    });
+    output += '\n';
+  }
+  
+  if (result.strengths && result.strengths.length > 0) {
+    output += 'Strengths:\n';
+    result.strengths.forEach(s => output += '+ ' + s + '\n');
+    output += '\n';
+  }
+  
+  if (result.improvements && result.improvements.length > 0) {
+    output += 'Areas for Improvement:\n';
+    result.improvements.forEach(i => output += '- ' + i + '\n');
+    output += '\n';
+  }
+  
+  output += 'Overall: ' + result.overallFeedback + '\n';
+  output += '========================================\n';
+  
+  return output;
 }
 
 function loadRubric(practicalNumber) {
@@ -109,7 +149,11 @@ async function main() {
   console.error('Grading with rubric...');
   const result = await gradeAssignment(submissionText, rubric, aiResult);
   
+  // Output JSON for workflow
   console.log(JSON.stringify(result, null, 2));
+  
+  // Display formatted results to stderr
+  console.error(formatResults(result));
 }
 
 main().catch(error => {
