@@ -442,9 +442,25 @@
 
             try {
                 // Read file content
-                const fileContent = await readFileAsText(selectedFile);
+                let fileContent = await readFileAsText(selectedFile);
 
-                // Prepare submission data with proper headers
+                // CRITICAL FIX: Remove any existing headers from uploaded file to prevent conflicts
+                // Strip headers like STUDENT_NAME:, STUDENT_ID:, STUDENT_EMAIL:, BATCH:, PRACTICAL:, SUBMISSION_DATE:
+                fileContent = fileContent.replace(/^STUDENT_NAME:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^STUDENT_ID:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^STUDENT_EMAIL:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^BATCH:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^PRACTICAL:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^SUBMISSION_DATE:\s*.+$/gim, '');
+                
+                // Remove any header separator lines
+                fileContent = fileContent.replace(/^={10,}.*={10,}$/gim, '');
+                fileContent = fileContent.replace(/^={5,}\s*(CODE|DOCUMENTATION|END).*$/gim, '');
+                
+                // Clean up multiple blank lines
+                fileContent = fileContent.replace(/\n{3,}/g, '\n\n').trim();
+
+                // Prepare submission data with proper headers from form input
                 const submissionContent = `STUDENT_NAME: ${studentName}
 STUDENT_ID: ${rollNumber}
 STUDENT_EMAIL: ${email}
