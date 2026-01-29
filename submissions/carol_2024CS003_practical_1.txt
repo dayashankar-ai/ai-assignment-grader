@@ -1,0 +1,35 @@
+Student Name: Carol Davis
+Roll Number: 2024CS003
+Batch: 2024
+Email: carol.davis@example.com
+Practical Number: 1
+Submission Date: 2026-01-29T10:52:21.126Z
+
+================== CODE/DOCUMENTATION ==================
+
+STUDENT_NAME: Carol Davis
+STUDENT_ID: 2024CS003
+STUDENT_EMAIL: carol.davis@example.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Prompt Engineering
+
+## Simple Prompts
+
+I tried some prompts like "What is AI?" and got answers.
+
+## Prompt Refinement
+
+Changed "Tell about ML" to "Explain machine learning with examples" and got better answer.
+
+## Testing
+
+Tested different ways of asking questions. More specific questions got better answers.
+
+## Conclusion
+
+Being specific helps get better results from AI.
+
+
+================== END OF SUBMISSION ==================
