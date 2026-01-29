@@ -54,15 +54,31 @@ function calculateGradeLetter(score) {
 }
 
 async function gradeAssignment(submissionText, rubric, aiResult) {
-  // Build grading prompt with rubric details
-  let prompt = 'Grade this assignment using the rubric. Return ONLY valid JSON.\n\n';
-  prompt += 'RUBRIC: ' + rubric.title + ' (' + rubric.totalPoints + ' points)\n';
-  prompt += 'Criteria:\n';
-  rubric.criteria.forEach(c => {
-    prompt += '- ' + c.name + ' (' + c.points + ' pts): ' + c.description + '\n';
+  // Build enhanced grading prompt with detailed criteria analysis
+  let prompt = 'Grade this assignment using the rubric. Analyze each criterion carefully. Return ONLY valid JSON.\n\n';
+  prompt += 'RUBRIC: ' + rubric.title + ' (' + rubric.totalPoints + ' points)\n\n';
+  prompt += 'CRITERIA TO EVALUATE:\n';
+  rubric.criteria.forEach((c, idx) => {
+    prompt += (idx + 1) + '. ' + c.name + ' (' + c.points + ' points max)\n';
+    prompt += '   Description: ' + c.description + '\n';
+    prompt += '   Evaluate: Does the submission meet this criterion? Provide specific evidence.\n\n';
   });
-  prompt += '\nSubmission:\n' + submissionText;
-  prompt += '\n\nReturn JSON with: totalScore, criteria (array with name, score, maxScore, feedback), overallFeedback, strengths (array), improvements (array)';
+  
+  prompt += '\nSUBMISSION TO GRADE:\n' + submissionText;
+  
+  prompt += '\n\nGRADING INSTRUCTIONS:\n';
+  prompt += '1. For EACH criterion, provide:\n';
+  prompt += '   - name (exact match from rubric)\n';
+  prompt += '   - score (0 to maxScore)\n';
+  prompt += '   - maxScore (from rubric)\n';
+  prompt += '   - feedback (specific observations with evidence)\n';
+  prompt += '   - evidence (quote or describe specific parts that justify the score)\n';
+  prompt += '2. Calculate totalScore (sum of all criterion scores)\n';
+  prompt += '3. Provide overallFeedback (holistic assessment)\n';
+  prompt += '4. List strengths (what was done well)\n';
+  prompt += '5. List improvements (specific actionable suggestions)\n';
+  prompt += '6. Identify learningEvidence (signs of genuine understanding vs AI generation)\n\n';
+  prompt += 'Return JSON with: totalScore, criteria (array), overallFeedback, strengths (array), improvements (array), learningEvidence (array)';
 
   let result;
   let attempts = 0;
@@ -161,16 +177,26 @@ function formatResults(result) {
   output += 'Grade: ' + result.gradeLetter + '\n\n';
   
   if (result.criteria && result.criteria.length > 0) {
-    output += 'Criteria Breakdown:\n';
-    result.criteria.forEach(c => {
-      output += '- ' + c.name + ': ' + c.score + '/' + c.maxScore + '\n';
-      output += '  ' + c.feedback + '\n';
+    output += 'Detailed Criteria Assessment:\n';
+    output += '========================================\n';
+    result.criteria.forEach((c, idx) => {
+      output += (idx + 1) + '. ' + c.name + ': ' + c.score + '/' + c.maxScore + ' points\n';
+      output += '   Feedback: ' + c.feedback + '\n';
+      if (c.evidence) {
+        output += '   Evidence: ' + c.evidence + '\n';
+      }
+      output += '\n';
     });
+  }
+  
+  if (result.learningEvidence && result.learningEvidence.length > 0) {
+    output += 'Learning Evidence (Authentic Work Indicators):\n';
+    result.learningEvidence.forEach(e => output += '✓ ' + e + '\n');
     output += '\n';
   }
   
   if (result.strengths && result.strengths.length > 0) {
-    output += 'Strengths:\n';
+    output += 'Key Strengths:\n';
     result.strengths.forEach(s => output += '+ ' + s + '\n');
     output += '\n';
   }
