@@ -53,7 +53,7 @@ function calculateGradeLetter(score) {
   return 'F';
 }
 
-async function gradeAssignment(submissionText, rubric, aiResult) {
+async function gradeAssignment(submissionText, rubric, aiResult, practicalNumber) {
   // Build enhanced grading prompt with detailed criteria analysis
   let prompt = 'Grade this assignment using the rubric. Analyze each criterion carefully. Return ONLY valid JSON.\n\n';
   prompt += 'RUBRIC: ' + rubric.title + ' (' + rubric.totalPoints + ' points)\n\n';
@@ -87,7 +87,7 @@ async function gradeAssignment(submissionText, rubric, aiResult) {
   while (attempts < maxAttempts) {
     try {
       const message = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-5-sonnet-20240620',
         max_tokens: 2048,
         temperature: 0,
         messages: [{ role: 'user', content: prompt }]
@@ -296,10 +296,10 @@ async function main() {
 
   // Perform grading
   console.error('[5/5] Grading assignment with Claude API');
-  console.error('Model: claude-3-5-sonnet-20241022');
+  console.error('Model: claude-3-5-sonnet-20240620');
   console.error('This may take 30-60 seconds...');
   
-  const result = await gradeAssignment(submissionText, rubric, aiResult);
+  const result = await gradeAssignment(submissionText, rubric, aiResult, practicalNumber);
   
   // Add student info to result
   result.studentName = studentInfo.studentName || 'Unknown';
