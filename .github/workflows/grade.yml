@@ -216,17 +216,29 @@ jobs:
               const filePath = submissionFiles[0];
               const content = fs.readFileSync(filePath, 'utf-8');
               
-              // Extract metadata from filename or commit message
+              // Extract metadata from file content (preferred) or filename
               const filename = path.basename(filePath);
-              const match = filename.match(/(\w+)_(\d+)_practical_(\d+)/i);
+              const filenameMatch = filename.match(/([\w_]+)_(\d+[A-Z]*\d*)_practical_(\d+)/i);
+              
+              // Try to extract student info from file content first
+              const nameFromContent = content.match(/STUDENT_NAME:\s*(.+)/i);
+              const idFromContent = content.match(/STUDENT_ID:\s*(.+)/i);
+              const emailFromContent = content.match(/STUDENT_EMAIL:\s*(.+)/i);
+              const batchFromContent = content.match(/BATCH:\s*(\d+)/i);
+              const practicalFromContent = content.match(/PRACTICAL:\s*(\d+)/i);
               
               submissionData = {
-                studentName: match ? match[1] : context.payload.pusher?.name || 'Unknown',
-                rollNumber: match ? match[2] : 'Unknown',
-                batch: '2024',
+                studentName: (nameFromContent ? nameFromContent[1].trim() : null) || 
+                            (filenameMatch ? filenameMatch[1].replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : null) || 
+                            context.payload.pusher?.name || 'Unknown',
+                rollNumber: (idFromContent ? idFromContent[1].trim() : null) || 
+                           (filenameMatch ? filenameMatch[2] : 'Unknown'),
+                batch: (batchFromContent ? batchFromContent[1] : null) || '2024',
                 year: 'III',
-                studentEmail: context.payload.pusher?.email || 'unknown@example.com',
-                practicalNumber: match ? match[3] : '1',
+                studentEmail: (emailFromContent ? emailFromContent[1].trim() : null) || 
+                             context.payload.pusher?.email || 'unknown@example.com',
+                practicalNumber: (practicalFromContent ? practicalFromContent[1] : null) || 
+                                (filenameMatch ? filenameMatch[3] : '1'),
                 submissionContent: content,
                 issueNumber: null
               };
