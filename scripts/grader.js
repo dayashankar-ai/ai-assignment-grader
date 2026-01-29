@@ -8,6 +8,35 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+function extractStudentInfo(text) {
+  const info = {
+    studentName: '',
+    studentId: '',
+    studentEmail: '',
+    batch: '',
+    practical: ''
+  };
+  
+  const lines = text.split('\n').slice(0, 20);
+  
+  for (const line of lines) {
+    const upper = line.toUpperCase();
+    if (upper.includes('STUDENT_NAME:') || upper.includes('NAME:')) {
+      info.studentName = line.split(':')[1].trim();
+    } else if (upper.includes('STUDENT_ID:') || upper.includes('ID:')) {
+      info.studentId = line.split(':')[1].trim();
+    } else if (upper.includes('STUDENT_EMAIL:') || upper.includes('EMAIL:')) {
+      info.studentEmail = line.split(':')[1].trim();
+    } else if (upper.includes('BATCH:')) {
+      info.batch = line.split(':')[1].trim();
+    } else if (upper.includes('PRACTICAL:')) {
+      info.practical = line.split(':')[1].trim();
+    }
+  }
+  
+  return info;
+}
+
 function calculateAIPenalty(aiPercentage) {
   if (aiPercentage <= 20) return { penalty: 0, severity: 'none' };
   if (aiPercentage <= 40) return { penalty: -10, severity: 'low' };
@@ -114,6 +143,16 @@ function formatResults(result) {
   let output = '\n========================================\n';
   output += 'GRADING RESULTS\n';
   output += '========================================\n';
+  
+  if (result.studentName) {
+    output += 'Student: ' + result.studentName + '\n';
+    output += 'ID: ' + result.studentId + '\n';
+    output += 'Email: ' + result.studentEmail + '\n';
+    output += 'Batch: ' + result.batch + '\n';
+    output += 'Practical: ' + result.practicalNumber + '\n';
+    output += '----------------------------------------\n';
+  }
+  
   output += 'Base Score: ' + result.baseScore + '/100\n';
   if (result.aiPenalty !== 0) {
     output += 'AI Penalty: ' + result.aiPenalty + ' points (' + result.aiPenaltySeverity + ')\n';
@@ -161,6 +200,7 @@ async function main() {
 
   const submissionText = fs.readFileSync(filePath, 'utf-8');
   const rubric = loadRubric(practicalNumber);
+  const studentInfo = extractStudentInfo(submissionText);
 
   // Load AI results if available
   let aiResult = null;
@@ -175,6 +215,13 @@ async function main() {
 
   console.error('Grading with rubric...');
   const result = await gradeAssignment(submissionText, rubric, aiResult);
+  
+  // Add student info to result
+  result.studentName = studentInfo.studentName || 'Unknown';
+  result.studentId = studentInfo.studentId || 'Unknown';
+  result.studentEmail = studentInfo.studentEmail || 'Unknown';
+  result.batch = studentInfo.batch || 'Unknown';
+  result.practicalNumber = studentInfo.practical || practicalNumber;
   
   // Output JSON for workflow
   console.log(JSON.stringify(result, null, 2));
