@@ -159,4 +159,3 @@ Through experimentation, I learned that small changes in prompt wording can sign
 - Lecture notes from sessions 1-3
 - OpenAI prompt engineering guide
 - Personal experimentation and testing
-
