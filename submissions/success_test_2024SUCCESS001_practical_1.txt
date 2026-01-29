@@ -1,0 +1,161 @@
+STUDENT_NAME: Success Test Student
+STUDENT_ID: 2024SUCCESS001
+STUDENT_EMAIL: success@test.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This practical explores the fundamentals of prompt engineering, including prompt design, testing, and understanding LLM responses.
+
+## Part 1: Simple Prompts
+
+### Prompt 1: Information Extraction
+**Prompt:** "Extract the key information from this text: 'John Smith, age 30, lives in New York and works as a software engineer.'"
+
+**Response:** The LLM correctly identified:
+- Name: John Smith
+- Age: 30
+- Location: New York
+- Occupation: Software engineer
+
+**Analysis:** Clear, structured prompt produced accurate extraction. The specificity helped the model understand the task.
+
+### Prompt 2: Text Summarization
+**Prompt:** "Summarize the following in 2 sentences: [long article about climate change]"
+
+**Response:** Received a concise 2-sentence summary that captured main points.
+
+**Analysis:** Limiting output length (2 sentences) worked well. The prompt was specific about the desired format.
+
+### Prompt 3: Creative Writing
+**Prompt:** "Write a short story (50 words) about a robot learning to paint."
+
+**Response:** Got a creative 50-word story with beginning, middle, and end.
+
+**Analysis:** Providing word count constraint helped control output length. Clear task description yielded good results.
+
+## Part 2: Prompt Refinement
+
+### Initial Prompt (Poor)
+"Tell me about Python"
+
+**Issues:**
+- Too vague
+- Unclear scope
+- Could refer to programming language or snake
+- No context provided
+
+### Refined Prompt (Better)
+"Explain Python programming language's key features, focusing on: 1) Easy syntax, 2) Standard library, 3) Use cases. Provide 2-3 sentences for each point."
+
+**Improvements:**
+- Specific topic (programming language)
+- Structured request with numbered points
+- Clear expectations for response format
+- Defined scope and length
+
+**Result:** Received well-organized response matching all criteria.
+
+## Part 3: Testing Different Approaches
+
+### Experiment 1: Question Format
+- **Direct:** "What is machine learning?"
+- **Instructional:** "Explain machine learning as if teaching a beginner."
+- **Contextual:** "I'm a business student. Explain machine learning for business applications."
+
+**Findings:** Contextual prompts produced the most relevant and tailored responses. Adding audience context significantly improved output quality.
+
+### Experiment 2: Output Format
+- **Unstructured:** "List benefits of cloud computing"
+- **Structured:** "List 5 benefits of cloud computing in bullet points"
+- **Detailed:** "List 5 benefits of cloud computing. For each, provide: benefit name, brief description, real-world example"
+
+**Findings:** More detailed structure requests yielded better organized, more useful responses. Specificity is key.
+
+## Part 4: Edge Cases and Limitations
+
+### Handling Ambiguity
+**Prompt:** "How do I fix my code?"
+
+**Issue:** Too ambiguous - no code provided, no error mentioned, no programming language specified.
+
+**Improved:** "I'm getting a 'list index out of range' error in Python when running this code: [code snippet]. How do I fix it?"
+
+**Learning:** LLMs need context and specifics to provide useful help.
+
+### Dealing with Complex Requests
+**Prompt:** "Write a complete web application with user authentication, database, and API"
+
+**Issue:** Too broad for a single prompt. Needs decomposition.
+
+**Better Approach:** Break into smaller prompts:
+1. "Design database schema for user authentication"
+2. "Write API endpoint for user login"
+3. "Create frontend form for registration"
+
+**Learning:** Complex tasks should be divided into manageable sub-prompts.
+
+## Observations and Insights
+
+### What Works Well:
+1. **Specificity**: Clear, detailed prompts produce better results
+2. **Structure**: Numbered lists, bullet points, clear format expectations
+3. **Context**: Providing background info helps tailor responses
+4. **Constraints**: Word limits, format requirements guide output quality
+5. **Examples**: Showing desired format improves accuracy
+
+### Common Pitfalls:
+1. **Vagueness**: "Tell me about X" is too broad
+2. **Assumptions**: Assuming the model knows your context
+3. **Over-complexity**: Trying to do too much in one prompt
+4. **Under-specification**: Not defining output format
+5. **Missing constraints**: Not limiting scope or length
+
+### Best Practices Learned:
+- Start with clear objective
+- Specify audience/context when relevant
+- Define output format explicitly
+- Use examples when appropriate
+- Break complex tasks into steps
+- Test and refine prompts iteratively
+- Consider edge cases
+
+## Prompt Engineering Principles Applied
+
+1. **Clarity**: Used precise language, avoided ambiguity
+2. **Specificity**: Defined exactly what was needed
+3. **Structure**: Organized requests logically
+4. **Context**: Provided relevant background
+5. **Iteration**: Tested and improved prompts based on results
+
+## Challenges Faced
+
+Initially struggled with:
+- Making prompts too vague
+- Not providing enough structure
+- Forgetting to specify output format
+- Trying to accomplish too much at once
+
+Overcame by:
+- Adding specific details and constraints
+- Breaking down complex requests
+- Explicitly stating format requirements
+- Testing multiple variations
+
+## Conclusion
+
+This practical demonstrated that effective prompt engineering requires:
+- Clear communication of intent
+- Appropriate level of detail
+- Structured requests
+- Context provision
+- Iterative refinement
+
+Through experimentation, I learned that small changes in prompt wording can significantly impact output quality. The key is being specific, structured, and thoughtful about what you're asking the model to do.
+
+## References
+- Lecture notes from sessions 1-3
+- OpenAI prompt engineering guide
+- Personal experimentation and testing
