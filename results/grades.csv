@@ -3,3 +3,18 @@ Timestamp,Student Name,Student ID,Student Email,Practical Number,Total Score,Max
 2026-01-25T14:20:00Z,Jane Smith,2024002,jane@example.com,1,82,100,B+,No,12%,"Good submission with solid understanding. Code quality is high and experiments are thorough. Documentation could be expanded. Show more analysis of results."
 2026-01-25T09:15:00Z,Bob Johnson,2024003,bob@example.com,2,78,100,B+,Yes,88%,"FLAGGED: High AI usage detected (88%). While code works, limited evidence of personal understanding. Please review academic integrity policy. Consider resubmitting with more original work."
 2026-01-28T15:45:00Z,Test Student,2024TEST001,test@example.com,1,85,100,A-,No,18%,"Very good first submission! Solid grasp of temperature parameter effects. Clean code with proper structure. Learning report demonstrates understanding. Suggestions: Add error handling, try more complex prompts, expand comparative analysis."
+<<<<<<< HEAD
+=======
+2026-01-29T06:53:54Z,Workflow Test Student,2024WF001,workflow.test@example.com,1,0,100,F,No,0%,"Grading failed after 3 attempts"
+2026-01-29T09:13:45Z,Workflow Test Student,2024WF001,workflow.test@example.com,1,0,100,F,No,0%,"This submission appears to be a complete mismatch with the assignment requirements. The rubric clear"
+2026-01-29T09:17:18Z,Workflow Test Student,2024WF001,workflow.test@example.com,1,0,100,F,No,0%,"This submission appears to be for an entirely different assignment than what the rubric is designed "
+2026-01-29T09:26:44Z,Workflow Test Student,2024WF001,workflow.test@example.com,1,0,100,F,No,0%,"This submission appears to be for an entirely different assignment than what the rubric is designed "
+2026-01-29T09:29:13Z,Workflow Test Student,2024WF001,workflow.test@example.com,1,0,100,F,No,0%,"This submission appears to be for an entirely different assignment than what the rubric is designed "
+2026-01-29T09:32:22Z,Test User,Unknown,test@example.com,1,45,100,F,No,0%,"This submission demonstrates a foundational understanding of API interaction and the temperature par"
+2026-01-29T09:35:51Z,John Smith,2024SUCCESS001,success@test.com,1,85,100,B,No,0%,"This is a solid theoretical submission that demonstrates good understanding of prompt engineering pr"
+2026-01-29T09:56:42Z,John Smith,2024SUCCESS001,success@test.com,1,85,100,B,No,0%,"This is a solid theoretical submission that demonstrates good understanding of prompt engineering pr"
+2026-01-29T10:48:03Z,John Smith,2024SUCCESS001,success@test.com,1,85,100,B,No,0%,"This is a solid theoretical submission that demonstrates good understanding of prompt engineering pr"
+2026-01-29T10:53:20Z,John Smith,2024SUCCESS001,success@test.com,1,85,100,B,No,0%,"This is a solid theoretical submission that demonstrates good understanding of prompt engineering pr"
+2026-01-29T11:54:01Z,John Smith,2024SUCCESS001,success@test.com,1,85,100,B,No,0%,"This is a well-documented theoretical exploration of prompt engineering fundamentals that demonstrat"
+2026-01-29T12:45:00Z,John Smith,2024SUCCESS001,success@test.com,1,85,100,B,No,0%,"This is a well-documented theoretical exploration of prompt engineering fundamentals that demonstrat"
+>>>>>>> 3738581fcaa59ad7b793a8e90ac32735dcb702ed
