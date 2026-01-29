@@ -35,34 +35,61 @@ async function gradeAssignment(submissionText, rubric, aiResult) {
   prompt += '\nSubmission:\n' + submissionText;
   prompt += '\n\nReturn JSON with: totalScore, criteria (array with name, score, maxScore, feedback), overallFeedback, strengths (array), improvements (array)';
 
-  const message = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: 2048,
-    temperature: 0,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  const responseText = message.content[0].text;
   let result;
+  let attempts = 0;
+  const maxAttempts = 3;
   
-  try {
-    const jsonStart = responseText.indexOf('{');
-    const jsonEnd = responseText.lastIndexOf('}') + 1;
-    const jsonText = responseText.substring(jsonStart, jsonEnd);
-    result = JSON.parse(jsonText);
-  } catch (error) {
-    result = {
-      totalScore: 0,
-      criteria: rubric.criteria.map(c => ({
-        name: c.name,
-        score: 0,
-        maxScore: c.points,
-        feedback: 'Unable to grade'
-      })),
-      overallFeedback: 'Error parsing response',
-      strengths: [],
-      improvements: []
-    };
+  while (attempts < maxAttempts) {
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2048,
+        temperature: 0,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const responseText = message.content[0].text;
+      
+      // Try to parse JSON response
+      const jsonStart = responseText.indexOf('{');
+      const jsonEnd = responseText.lastIndexOf('}') + 1;
+      if (jsonStart === -1 || jsonEnd <= jsonStart) {
+        throw new Error('No JSON found in response');
+      }
+      
+      const jsonText = responseText.substring(jsonStart, jsonEnd);
+      result = JSON.parse(jsonText);
+      
+      // Validate required fields
+      if (!result.totalScore && result.totalScore !== 0) {
+        throw new Error('Missing totalScore');
+      }
+      
+      break; // Success!
+      
+    } catch (error) {
+      attempts++;
+      console.error('Attempt ' + attempts + ' failed: ' + error.message);
+      
+      if (attempts >= maxAttempts) {
+        // Return fallback result
+        result = {
+          totalScore: 0,
+          criteria: rubric.criteria.map(c => ({
+            name: c.name,
+            score: 0,
+            maxScore: c.points,
+            feedback: 'Unable to grade due to API error'
+          })),
+          overallFeedback: 'Grading failed after ' + maxAttempts + ' attempts',
+          strengths: [],
+          improvements: ['Manual review required']
+        };
+      } else {
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
   }
 
   // Apply AI penalty

@@ -23,34 +23,57 @@ async function detectAI(submissionText) {
   prompt += '- indicators: array of specific AI indicators found\n\n';
   prompt += 'Submission:\n' + submissionText;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: 2048,
-    temperature: 0,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  const responseText = message.content[0].text;
   let result;
+  let attempts = 0;
+  const maxAttempts = 3;
   
-  try {
-    const jsonStart = responseText.indexOf('{');
-    const jsonEnd = responseText.lastIndexOf('}') + 1;
-    const jsonText = responseText.substring(jsonStart, jsonEnd);
-    result = JSON.parse(jsonText);
-    
-    // Ensure aiDetected is boolean
-    if (result.aiProbability > 60) {
-      result.aiDetected = true;
+  while (attempts < maxAttempts) {
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2048,
+        temperature: 0,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const responseText = message.content[0].text;
+      
+      const jsonStart = responseText.indexOf('{');
+      const jsonEnd = responseText.lastIndexOf('}') + 1;
+      if (jsonStart === -1 || jsonEnd <= jsonStart) {
+        throw new Error('No JSON found in response');
+      }
+      
+      const jsonText = responseText.substring(jsonStart, jsonEnd);
+      result = JSON.parse(jsonText);
+      
+      // Validate and set aiDetected
+      if (!result.aiProbability && result.aiProbability !== 0) {
+        throw new Error('Missing aiProbability');
+      }
+      
+      if (result.aiProbability > 60) {
+        result.aiDetected = true;
+      }
+      
+      break; // Success!
+      
+    } catch (error) {
+      attempts++;
+      console.error('Attempt ' + attempts + ' failed: ' + error.message);
+      
+      if (attempts >= maxAttempts) {
+        result = {
+          aiProbability: 0,
+          confidence: 'low',
+          aiDetected: false,
+          recommendation: 'Detection failed after ' + maxAttempts + ' attempts',
+          indicators: []
+        };
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
-  } catch (error) {
-    result = {
-      aiProbability: 0,
-      confidence: 'low',
-      aiDetected: false,
-      recommendation: 'Unable to analyze',
-      indicators: []
-    };
   }
 
   return result;
