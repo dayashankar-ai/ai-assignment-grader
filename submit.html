@@ -432,13 +432,9 @@
             const email = document.getElementById('email').value.trim();
             const practicalNumber = document.getElementById('practicalNumber').value;
 
-            // Validate filename format
+            // Create proper filename from form data (not from uploaded file)
             const expectedFilename = `${studentName.toLowerCase().replace(/\s+/g, '_')}_${rollNumber}_practical_${practicalNumber}.txt`;
-            if (!selectedFile.name.toLowerCase().includes(rollNumber.toLowerCase())) {
-                showMessage('error', `⚠️ File name should include your roll number. Expected format: ${expectedFilename}`);
-                return;
-            }
-
+            
             // Show loading
             loading.classList.add('show');
             submitBtn.disabled = true;
@@ -448,13 +444,13 @@
                 // Read file content
                 const fileContent = await readFileAsText(selectedFile);
 
-                // Prepare submission data
-                const submissionContent = `Student Name: ${studentName}
-Roll Number: ${rollNumber}
-Batch: ${batch}
-Email: ${email}
-Practical Number: ${practicalNumber}
-Submission Date: ${new Date().toISOString()}
+                // Prepare submission data with proper headers
+                const submissionContent = `STUDENT_NAME: ${studentName}
+STUDENT_ID: ${rollNumber}
+STUDENT_EMAIL: ${email}
+BATCH: ${batch}
+PRACTICAL: ${practicalNumber}
+SUBMISSION_DATE: ${new Date().toISOString()}
 
 ================== CODE/DOCUMENTATION ==================
 
@@ -463,8 +459,8 @@ ${fileContent}
 ================== END OF SUBMISSION ==================
 `;
 
-                // Upload to GitHub
-                await uploadToGitHub(selectedFile.name, submissionContent);
+                // Upload to GitHub using the CORRECT filename from form data
+                await uploadToGitHub(expectedFilename, submissionContent);
 
                 // Success
                 loading.classList.remove('show');

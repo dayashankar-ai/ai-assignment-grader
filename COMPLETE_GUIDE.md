@@ -55,92 +55,105 @@ Then open: `results/grades.csv` in Excel
 
 ---
 
-## 🧪 Test Data for Portal Testing
+## 🧪 Real Students in Database (For Testing)
 
-### **Test Student 1: Alice Johnson (High Quality - Expected Grade: A/B)**
+### **Student 1: John Smith (Grade: A)**
 
 **Student Details:**
-- Name: Alice Johnson
-- Roll Number: 2024CS001
-- Email: alice.johnson@example.com
-- Batch: 2024
+- Name: John Smith
+- Roll Number: 2024001
+- Email: john@example.com
 - Practical: 1
-
-**File to Upload:** `test_submissions/alice_2024CS001_practical_1.txt`
-(File created in your project folder)
-
-**Expected Result:**
-- Score: 85-95 points
-- Grade: A or B
-- AI Detection: No (0%)
-- Feedback: Comprehensive submission with excellent structure
+- Score: 92/100 (Grade A)
 
 ---
 
-### **Test Student 2: Bob Smith (Medium Quality - Expected Grade: C/B)**
+### **Student 2: Jane Smith (Grade: B+)**
 
 **Student Details:**
-- Name: Bob Smith
-- Roll Number: 2024CS002
-- Email: bob.smith@example.com
-- Batch: 2024
+- Name: Jane Smith
+- Roll Number: 2024002
+- Email: jane@example.com
 - Practical: 1
-
-**File to Upload:** `test_submissions/bob_2024CS002_practical_1.txt`
-
-**Expected Result:**
-- Score: 65-75 points
-- Grade: C or B
-- AI Detection: No (0%)
-- Feedback: Good attempt with room for improvement
+- Score: 82/100 (Grade B+)
 
 ---
 
-### **Test Student 3: Carol Davis (Basic - Expected Grade: D/C)**
+### **Student 3: Bob Johnson (Grade: B+ - AI Flagged)**
 
 **Student Details:**
-- Name: Carol Davis
-- Roll Number: 2024CS003
-- Email: carol.davis@example.com
-- Batch: 2024
-- Practical: 1
-
-**File to Upload:** `test_submissions/carol_2024CS003_practical_1.txt`
-
-**Expected Result:**
-- Score: 50-60 points
-- Grade: D or C
-- AI Detection: No (0%)
-- Feedback: Minimal submission, needs more detail
+- Name: Bob Johnson
+- Roll Number: 2024003
+- Email: bob@example.com
+- Practical: 2
+- Score: 78/100 (Grade B+)
+- AI Detection: Yes (88% confidence) ⚠️
 
 ---
 
-## 🔧 How to Test the Portal
+### **How to Test with New Submission:**
 
-### Step 1: Test File Upload Feature
+**Important:** When you submit via the portal, the system will:
+1. Create filename automatically: `alice_johnson_2024CS008_practical_1.txt`
+2. Use YOUR form input data (not the filename you upload)
+3. Add proper headers: STUDENT_NAME, STUDENT_ID, etc.
+4. Grade within 2-3 minutes
+
+**Test Submission Example:**
+- Go to: https://dayashankar-ai.github.io/ai-assignment-grader/submit.html
+- Enter Name: Alice Johnson
+- Enter Roll: 2024CS008
+- Enter Email: alice@example.com
+- Select any assignment file from test_submissions folder
+- Submit!
+- System will create: `alice_johnson_2024cs008_practical_1.txt`
+- Grade will show as "Alice Johnson" with roll "2024CS008"
+
+---
+
+## 🔧 How to Submit an Assignment
+
+### Step 1: Prepare Your Assignment File
+1. Create your assignment file (any name is fine - e.g., `my_assignment.txt`)
+2. The system will automatically rename it based on your form input
+3. File can be .txt, .py, .md, .pdf, or .zip (max 10MB)
+
+### Step 2: Submit via Portal
 1. Open: https://dayashankar-ai.github.io/ai-assignment-grader/submit.html
-2. Fill in test student details (use data above)
-3. **Click the upload area** or **drag & drop** test file
-4. You should see: "✅ File Selected: alice_2024CS001_practical_1.txt"
-5. Click "🚀 Submit Assignment"
-6. Wait for success message
+2. Fill in your details:
+   - **Student Name:** Your full name (e.g., Alice Johnson)
+   - **Roll Number:** Your roll number (e.g., 2024CS008)
+   - **Email:** Your email address
+   - **Batch:** Select your batch year
+   - **Year:** Select your current year
+   - **Assignment Number:** Select the practical number
+3. **Upload your file** (any file from test_submissions folder or your own work)
+4. Click "🚀 Submit Assignment"
+5. System will:
+   - Create proper filename: `alice_johnson_2024cs008_practical_1.txt`
+   - Add headers with your information
+   - Upload to GitHub
+   - Trigger auto-grading
 
-### Step 2: Monitor Grading Process
+### Step 3: Monitor Grading Process
 1. Check GitHub Actions: https://github.com/dayashankar-ai/ai-assignment-grader/actions
 2. You'll see workflow running (takes 2-3 minutes)
 3. Wait for green checkmark ✅
 
-### Step 3: View Results in Teacher Dashboard
-1. Open: https://dayashankar-ai.github.io/ai-assignment-grader/instructor.html
-2. Refresh page to see new grade
-3. Check grade distribution charts
-4. View detailed feedback
+### Step 4: View Results
+**For Students:**
+1. Open: https://dayashankar-ai.github.io/ai-assignment-grader/index.html
+2. Enter your name: "Alice Johnson"
+3. (Optional) Enter roll: "2024CS008"
+4. Click "🔍 Search My Grades"
+5. View your score, grade, and feedback
 
-### Step 4: Download Excel Report
-1. In Teacher Dashboard, find "Detailed Grade Table"
-2. Click "📥 Export to CSV" button
-3. Open downloaded file in Excel
-4. Verify all columns are present
+**For Instructors:**
+1. Open: https://dayashankar-ai.github.io/ai-assignment-grader/instructor.html
+2. See all submissions with correct student names
+3. View statistics and analytics
+4. Delete any incorrect entries using 🗑️ button
+5. Export to CSV
 
 ---
 
