@@ -9,14 +9,25 @@ const anthropic = new Anthropic({
 });
 
 async function detectAI(submissionText) {
+  // Build detailed detection prompt
+  let prompt = 'Analyze if this submission is AI-generated. Look for:\n';
+  prompt += '- Perfect grammar vs student errors\n';
+  prompt += '- Generic explanations vs personal learning\n';
+  prompt += '- Overly formal language vs casual tone\n';
+  prompt += '- Comprehensive structure vs learning artifacts\n\n';
+  prompt += 'Return ONLY valid JSON with:\n';
+  prompt += '- aiProbability: number 0-100\n';
+  prompt += '- confidence: "low", "medium", or "high"\n';
+  prompt += '- aiDetected: boolean (true if >60%)\n';
+  prompt += '- recommendation: brief assessment\n';
+  prompt += '- indicators: array of specific AI indicators found\n\n';
+  prompt += 'Submission:\n' + submissionText;
+
   const message = await anthropic.messages.create({
     model: 'claude-3-5-sonnet-20241022',
     max_tokens: 2048,
     temperature: 0,
-    messages: [{
-      role: 'user',
-      content: 'Analyze if this submission is AI-generated. Return ONLY valid JSON with: aiProbability (0-100), confidence (low/medium/high), aiDetected (boolean), recommendation.\n\nSubmission:\n' + submissionText
-    }]
+    messages: [{ role: 'user', content: prompt }]
   });
 
   const responseText = message.content[0].text;
@@ -27,12 +38,18 @@ async function detectAI(submissionText) {
     const jsonEnd = responseText.lastIndexOf('}') + 1;
     const jsonText = responseText.substring(jsonStart, jsonEnd);
     result = JSON.parse(jsonText);
+    
+    // Ensure aiDetected is boolean
+    if (result.aiProbability > 60) {
+      result.aiDetected = true;
+    }
   } catch (error) {
     result = {
       aiProbability: 0,
       confidence: 'low',
       aiDetected: false,
-      recommendation: 'Unable to analyze'
+      recommendation: 'Unable to analyze',
+      indicators: []
     };
   }
 

@@ -8,15 +8,38 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-async function gradeAssignment(submissionText, rubric) {
+function calculateAIPenalty(aiPercentage) {
+  if (aiPercentage <= 20) return { penalty: 0, severity: 'none' };
+  if (aiPercentage <= 40) return { penalty: -10, severity: 'low' };
+  if (aiPercentage <= 60) return { penalty: -25, severity: 'medium' };
+  if (aiPercentage <= 80) return { penalty: -50, severity: 'high' };
+  return { penalty: -100, severity: 'critical' };
+}
+
+function calculateGradeLetter(score) {
+  if (score >= 90) return 'A';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C';
+  if (score >= 60) return 'D';
+  return 'F';
+}
+
+async function gradeAssignment(submissionText, rubric, aiResult) {
+  // Build grading prompt with rubric details
+  let prompt = 'Grade this assignment using the rubric. Return ONLY valid JSON.\n\n';
+  prompt += 'RUBRIC: ' + rubric.title + ' (' + rubric.totalPoints + ' points)\n';
+  prompt += 'Criteria:\n';
+  rubric.criteria.forEach(c => {
+    prompt += '- ' + c.name + ' (' + c.points + ' pts): ' + c.description + '\n';
+  });
+  prompt += '\nSubmission:\n' + submissionText;
+  prompt += '\n\nReturn JSON with: totalScore, criteria (array with name, score, maxScore, feedback), overallFeedback, strengths (array), improvements (array)';
+
   const message = await anthropic.messages.create({
     model: 'claude-3-5-sonnet-20241022',
     max_tokens: 2048,
     temperature: 0,
-    messages: [{
-      role: 'user',
-      content: 'Grade this assignment and return ONLY valid JSON with: totalScore, criteria (array with name, score, feedback), gradeLetter, overallFeedback.\n\nSubmission:\n' + submissionText
-    }]
+    messages: [{ role: 'user', content: prompt }]
   });
 
   const responseText = message.content[0].text;
@@ -30,13 +53,31 @@ async function gradeAssignment(submissionText, rubric) {
   } catch (error) {
     result = {
       totalScore: 0,
-      criteria: [],
-      gradeLetter: 'F',
-      overallFeedback: 'Error parsing response'
+      criteria: rubric.criteria.map(c => ({
+        name: c.name,
+        score: 0,
+        maxScore: c.points,
+        feedback: 'Unable to grade'
+      })),
+      overallFeedback: 'Error parsing response',
+      strengths: [],
+      improvements: []
     };
   }
 
-  result.finalScore = result.totalScore;
+  // Apply AI penalty
+  result.baseScore = result.totalScore;
+  if (aiResult) {
+    const penaltyInfo = calculateAIPenalty(aiResult.aiProbability);
+    result.aiPenalty = penaltyInfo.penalty;
+    result.aiPenaltySeverity = penaltyInfo.severity;
+    result.finalScore = Math.max(0, result.baseScore + penaltyInfo.penalty);
+  } else {
+    result.aiPenalty = 0;
+    result.finalScore = result.baseScore;
+  }
+
+  result.gradeLetter = calculateGradeLetter(result.finalScore);
   return result;
 }
 
@@ -49,12 +90,24 @@ async function main() {
   const args = process.argv.slice(2);
   const filePath = args[0];
   const practicalNumber = args[1];
+  const aiResultFile = args[2] || 'ai-result.json';
 
   const submissionText = fs.readFileSync(filePath, 'utf-8');
   const rubric = loadRubric(practicalNumber);
 
-  console.error('Grading...');
-  const result = await gradeAssignment(submissionText, rubric);
+  // Load AI results if available
+  let aiResult = null;
+  if (fs.existsSync(aiResultFile)) {
+    try {
+      aiResult = JSON.parse(fs.readFileSync(aiResultFile, 'utf-8'));
+      console.error('AI detection: ' + aiResult.aiProbability + '% probability');
+    } catch (e) {
+      console.error('Warning: Could not load AI results');
+    }
+  }
+
+  console.error('Grading with rubric...');
+  const result = await gradeAssignment(submissionText, rubric, aiResult);
   
   console.log(JSON.stringify(result, null, 2));
 }
@@ -64,4 +117,4 @@ main().catch(error => {
   process.exit(1);
 });
 
-export { gradeAssignment, loadRubric };
+export { gradeAssignment, loadRubric, calculateAIPenalty, calculateGradeLetter };
