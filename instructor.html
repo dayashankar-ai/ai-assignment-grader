@@ -919,9 +919,44 @@
         // Load data from CSV
         async function loadData() {
             try {
-                // In production, load from results/grades.csv
-                // For now, use mock data
-                allSubmissions = generateMockData();
+                // Load real data from grades.csv
+                const response = await fetch('https://raw.githubusercontent.com/dayashankar-ai/ai-assignment-grader/main/results/grades.csv');
+                const csvText = await response.text();
+                const lines = csvText.split('\n').filter(line => line.trim());
+                
+                allSubmissions = [];
+                
+                // Parse CSV (skip header)
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length < 11) continue;
+                    
+                    const totalScore = parseInt(cols[5]) || 0;
+                    const aiConfidence = parseInt(cols[9]) || 0;
+                    const aiDetected = cols[8] === 'Yes';
+                    
+                    allSubmissions.push({
+                        timestamp: cols[0],
+                        studentName: cols[1],
+                        rollNumber: cols[2],
+                        email: cols[3],
+                        practicalNumber: parseInt(cols[4]) || 1,
+                        baseScore: totalScore,
+                        finalScore: totalScore,
+                        maxScore: parseInt(cols[6]) || 100,
+                        gradeLetter: cols[7],
+                        aiProbability: aiConfidence,
+                        aiDetected: aiDetected,
+                        aiPenalty: 0,
+                        feedback: cols.slice(10).join(','),
+                        batch: '2024',
+                        year: 'III',
+                        strengths: [],
+                        improvements: [],
+                        submissionText: ''
+                    });
+                }
+                
                 filteredSubmissions = [...allSubmissions];
                 
                 updateStatistics();
@@ -930,7 +965,7 @@
                 renderTable();
             } catch (error) {
                 console.error('Error loading data:', error);
-                showError('Failed to load submissions');
+                showError('Failed to load submissions. Please check your connection.');
             }
         }
 
@@ -1122,6 +1157,7 @@
                         <td><span class="badge ${statusClass}">${statusText}</span></td>
                         <td>
                             <button class="btn btn-primary btn-small" onclick='event.stopPropagation(); viewDetails(${JSON.stringify(s).replace(/'/g, "&apos;")})'>View</button>
+                            <button class="btn btn-danger btn-small" onclick='event.stopPropagation(); deleteSubmission("${s.rollNumber}", ${s.practicalNumber})' title="Delete Record">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -1400,6 +1436,34 @@
             alert(message);
         }
 
+        // Delete submission
+        async function deleteSubmission(rollNumber, practicalNumber) {
+            if (!confirm(`Are you sure you want to delete this submission?\n\nStudent Roll: ${rollNumber}\nPractical: ${practicalNumber}\n\nThis will remove it from the display.`)) {
+                return;
+            }
+            
+            try {
+                // Remove from local data
+                allSubmissions = allSubmissions.filter(s => 
+                    !(s.rollNumber === rollNumber && s.practicalNumber === practicalNumber)
+                );
+                filteredSubmissions = filteredSubmissions.filter(s => 
+                    !(s.rollNumber === rollNumber && s.practicalNumber === practicalNumber)
+                );
+                
+                // Update UI
+                updateStatistics();
+                updateCharts();
+                updateFlaggedStudents();
+                renderTable();
+                
+                alert('✅ Record deleted successfully!\n\nNote: To permanently delete from the database, you need to remove the line from results/grades.csv in GitHub.');
+            } catch (error) {
+                console.error('Error deleting submission:', error);
+                alert('❌ Failed to delete record. Please try again.');
+            }
+        }
+
         // Close modal on outside click
         document.getElementById('detailModal').addEventListener('click', (e) => {
             if (e.target.id === 'detailModal') {
@@ -1408,4 +1472,5 @@
         });
     </script>
 </body>
-</html>
+</html>
+
