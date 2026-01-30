@@ -1,11 +1,9 @@
-/**
- * Student Name: Final Test
- * Roll Number: 2024FINAL999
- * Email: final.test@university.edu
- * Batch: 2024
- * Year: III
- * Practical Number: 1
- */
+// STUDENT NAME: Final Test
+// ROLL NUMBER: 2024FINAL999
+// EMAIL: final.test@university.edu
+// BATCH: 2024
+// YEAR: III
+// PRACTICAL NUMBER: 1
 
 // SIMPLE STUDENT CALCULATOR - Practical 1 Solution
 // Student: Final Test

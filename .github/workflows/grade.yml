@@ -274,15 +274,16 @@ jobs:
               const filename = path.basename(filePath);
               const filenameMatch = filename.match(/([\w_]+)_(\d+[A-Z]*\d*)_practical_(\d+)/i);
               
-              // FIXED: Use strict regex that matches ONLY at START of line (same as grader.js)
-              // Only check first 10 lines to avoid matching content in assignment body
-              const headerLines = content.split('\n').slice(0, 10).join('\n');
+              // FIXED: Use regex that allows optional comment prefixes (// or * or #)
+              // Only check first 15 lines to avoid matching content in assignment body
+              const headerLines = content.split('\n').slice(0, 15).join('\n');
               
-              const nameFromContent = headerLines.match(/^STUDENT[_\s]?NAME\s*:\s*(.+)$/im);
-              const idFromContent = headerLines.match(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/im);
-              const emailFromContent = headerLines.match(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/im);
-              const batchFromContent = headerLines.match(/^BATCH\s*:\s*(\d+)$/im);
-              const practicalFromContent = headerLines.match(/^(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)$/im);
+              // Regex patterns that handle: "STUDENT NAME:", "// STUDENT NAME:", "* Student Name:", "# STUDENT_NAME:"
+              const nameFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*STUDENT[_\s]?NAME\s*:\s*(.+)$/im);
+              const idFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/im);
+              const emailFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/im);
+              const batchFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*BATCH\s*:\s*(\d+)$/im);
+              const practicalFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)$/im);
               
               // Debug logging
               console.log('First 10 lines of content:');
