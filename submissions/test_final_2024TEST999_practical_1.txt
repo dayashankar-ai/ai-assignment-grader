@@ -1,0 +1,32 @@
+STUDENT_NAME: Test Student Final
+STUDENT_ID: 2024TEST999
+STUDENT_EMAIL: test.final@example.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This is a test submission to verify the file detection fix.
+
+## Part 1: Simple Prompts
+
+### Prompt 1
+**Prompt:** "What is prompt engineering?"
+
+**Response:** Prompt engineering is the practice of designing and refining inputs to AI language models to achieve desired outputs.
+
+**Analysis:** Clear question, clear answer.
+
+## Part 2: Refinement
+
+### Before
+"Tell me about AI"
+
+### After  
+"Explain artificial intelligence concepts to a beginner, focusing on machine learning basics with 2 examples."
+
+**Improvements:** Added audience, focus, and example requirements.
+
+## Conclusion
+Effective prompts require clarity and specificity.
