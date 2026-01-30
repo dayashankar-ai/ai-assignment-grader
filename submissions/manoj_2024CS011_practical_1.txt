@@ -1,0 +1,59 @@
+STUDENT_NAME: Manoj
+STUDENT_ID: 2024CS011
+STUDENT_EMAIL: manoj@example.com
+BATCH: 2024
+PRACTICAL: 1
+SUBMISSION_DATE: 2026-01-30T06:39:11.911Z
+
+================== CODE/DOCUMENTATION ==================
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This practical covers the basics of prompt engineering.
+
+## Part 1: Simple Prompts
+
+### Prompt 1
+**Prompt:** "What is machine learning?"
+
+**Response:** Got a basic definition of machine learning as computers learning from data.
+
+**Analysis:** Simple prompt gave simple answer.
+
+### Prompt 2
+**Prompt:** "Summarize this article in 3 sentences."
+
+**Response:** Received a 3-sentence summary.
+
+**Analysis:** The constraint worked as expected.
+
+## Part 2: Prompt Refinement
+
+### Before
+"Explain AI"
+
+**Issues:** Too broad.
+
+### After
+"Explain artificial intelligence to a beginner, focusing on supervised learning with examples."
+
+**Improvements:** Added audience, focus area, and example requirement.
+
+## Part 3: Testing
+
+### Test 1: Different Prompts
+Tried asking the same question in different ways. Got different responses based on phrasing.
+
+### Test 2: Adding Context
+Adding more context to prompts gave better, more relevant answers.
+
+## Observations
+- Clear prompts work better
+- Specific instructions help
+- Context matters
+
+## Conclusion
+Prompt engineering improves when you are specific and provide context.
+
+================== END OF SUBMISSION ==================
