@@ -1,0 +1,73 @@
+STUDENT_NAME: Rajesh Sharma
+STUDENT_ID: 2024CS015
+STUDENT_EMAIL: rajesh.sharma@example.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This practical is about prompt engineering. I will show some prompts and responses.
+
+## Part 1: Simple Prompts
+
+### Prompt 1: Information Extraction
+**Prompt:** "Tell me about AI"
+
+**Response:** AI is artificial intelligence. It is used in many things like computers and phones.
+
+**Analysis:** The prompt worked and gave me answer about AI.
+
+### Prompt 2: Summarization
+**Prompt:** "Summarize machine learning"
+
+**Response:** Machine learning is when computers learn from data.
+
+**Analysis:** Got a short answer.
+
+## Part 2: Prompt Refinement
+
+### Initial Prompt
+"What is deep learning?"
+
+**Issues:** The prompt is simple.
+
+### Refined Prompt
+"What is deep learning and how is it different from machine learning?"
+
+**Improvements:** I added more question to the prompt.
+
+## Part 3: Testing Approaches
+
+### Test 1
+I tested the prompt with different words. Sometimes I got different answers.
+
+### Test 2
+I tried asking in different ways. The answers changed a little bit.
+
+## Observations
+- Prompts work
+- AI gives answers
+- Different prompts give different answers
+
+## Code Example
+Here is a simple code I wrote:
+
+```python
+def ask_ai(prompt):
+    # This function asks AI
+    response = ai.ask(prompt)
+    print(response)
+
+# Testing
+ask_ai("What is AI?")
+```
+
+Note: The code has no error handling and is very basic.
+
+## Conclusion
+Prompt engineering is important for getting good answers from AI. I learned that prompts should be clear.
+
+## References
+- Wikipedia
+- Google search
