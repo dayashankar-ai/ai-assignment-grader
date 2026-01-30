@@ -1,0 +1,19 @@
+{
+  "totalScore": 0,
+  "baseScore": 0,
+  "finalScore": 0,
+  "gradeLetter": "F",
+  "overallFeedback": "Grading result file not found",
+  "criteria": [],
+  "strengths": [],
+  "improvements": [],
+  "studentName": "Unknown",
+  "rollNumber": "Unknown",
+  "email": "Unknown",
+  "batch": "Unknown",
+  "practicalNumber": "1",
+  "timestamp": "2026-01-30T11:14:38.652Z",
+  "aiUsagePercent": 0,
+  "submissionText": "// STUDENT NAME: Production Test\n// ROLL NUMBER: 2024PROD001\n// EMAIL: prod.test@university.edu\n// BATCH: 2024\n// YEAR: III\n// PRACTICAL NUMBER: 1\n\n// Production test submission with good content\n\nclass AdvancedCalculator {\n    constructor() {\n        this.memory = 0;\n        this.history = [];\n    }\n    \n    add(a, b) {\n        const result = parseFloat(a) + parseFloat(b);\n        this.history.push(`${a} + ${b} = ${result}`);\n        return result;\n    }\n    \n    subtract(a, b) {\n        const result = parseFloat(a) - parseFloat(b);\n        this.history.push(`${a} - ${b} = ${result}`);\n        return result;\n    }\n    \n    multiply(a, b) {\n        const result = parseFloat(a) * parseFloat(b);\n        this.history.push(`${a} × ${b} = ${result}`);\n        return result;\n    }\n    \n    divide(a, b) {\n        if (parseFloat(b) === 0) {\n            throw new Error(\"Cannot divide by zero\");\n        }\n        const result = parseFloat(a) / parseFloat(b);\n        this.history.push(`${a} ÷ ${b} = ${result}`);\n        return result;\n    }\n    \n    power(base, exponent) {\n        const result = Math.pow(parseFloat(base), parseFloat(exponent));\n        this.history.push(`${base}^${exponent} = ${result}`);\n        return result;\n    }\n    \n    squareRoot(n) {\n        if (parseFloat(n) < 0) {\n            throw new Error(\"Cannot calculate square root of negative number\");\n        }\n        const result = Math.sqrt(parseFloat(n));\n        this.history.push(`√${n} = ${result}`);\n        return result;\n    }\n    \n    percentage(value, percent) {\n        const result = (parseFloat(value) * parseFloat(percent)) / 100;\n        this.history.push(`${percent}% of ${value} = ${result}`);\n        return result;\n    }\n    \n    memoryStore(value) {\n        this.memory = parseFloat(value);\n        return `Stored ${value} in memory`;\n    }\n    \n    memoryRecall() {\n        return this.memory;\n    }\n    \n    memoryClear() {\n        this.memory = 0;\n        return \"Memory cleared\";\n    }\n    \n    getHistory() {\n        return this.history;\n    }\n    \n    clearHistory() {\n        this.history = [];\n        return \"History cleared\";\n    }\n}\n\n// Export for testing\nmodule.exports = AdvancedCalculator;\n",
+  "instructorComments": ""
+}
