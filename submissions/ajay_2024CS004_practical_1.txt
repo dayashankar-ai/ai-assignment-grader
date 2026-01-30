@@ -3,9 +3,6 @@ STUDENT_ID: 2024CS004
 STUDENT_EMAIL: ajay@example.com
 BATCH: 2024
 PRACTICAL: 1
-SUBMISSION_DATE: 2026-01-30T05:10:43.167Z
-
-================== CODE/DOCUMENTATION ==================
 
 # Practical 1: Basic Prompt Engineering
 
@@ -60,5 +57,3 @@ Requesting step-by-step reasoning improves accuracy and provides transparency.
 
 ## Conclusion
 Effective prompt engineering requires clear communication, appropriate specificity, and iterative refinement.
-
-================== END OF SUBMISSION ==================
