@@ -1,0 +1,46 @@
+STUDENT_NAME: Amit Verma
+STUDENT_ID: 2024CS022
+EMAIL: amit.verma@university.edu
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Prompt Engineering Fundamentals
+
+## Overview
+This document covers my exploration of prompt engineering basics.
+
+## Task 1: Basic Prompt
+```python
+prompt = "Write a poem"
+```
+
+This is too vague and lacks specificity.
+
+## Task 2: Better Prompt
+```python
+better_prompt = """
+Write a short haiku about spring.
+Use traditional 5-7-5 syllable structure.
+Include imagery of cherry blossoms.
+"""
+```
+
+This is more specific with clear requirements.
+
+## Task 3: Code Generation Prompt
+```python
+code_prompt = """
+Create a Python function that:
+- Takes a list of numbers
+- Returns the average
+- Handles empty lists gracefully
+Include docstring and type hints.
+"""
+```
+
+## Conclusion
+Prompt engineering requires practice and iteration. Better prompts lead to better results.
+
+## References
+- Course lectures
+- OpenAI docs
