@@ -1,0 +1,228 @@
+/**
+ * Student Name: Final Test
+ * Roll Number: 2024FINAL999
+ * Email: final.test@university.edu
+ * Batch: 2024
+ * Year: III
+ * Practical Number: 1
+ */
+
+// SIMPLE STUDENT CALCULATOR - Practical 1 Solution
+// Student: Final Test
+// Date: January 2026
+
+const readline = require('readline');
+
+class Calculator {
+    constructor() {
+        this.memory = 0;
+        this.history = [];
+    }
+    
+    // Basic Operations
+    add(a, b) {
+        const result = a + b;
+        this.history.push(`${a} + ${b} = ${result}`);
+        return result;
+    }
+    
+    subtract(a, b) {
+        const result = a - b;
+        this.history.push(`${a} - ${b} = ${result}`);
+        return result;
+    }
+    
+    multiply(a, b) {
+        const result = a * b;
+        this.history.push(`${a} × ${b} = ${result}`);
+        return result;
+    }
+    
+    divide(a, b) {
+        if (b === 0) {
+            throw new Error("Division by zero is not allowed");
+        }
+        const result = a / b;
+        this.history.push(`${a} ÷ ${b} = ${result}`);
+        return result;
+    }
+    
+    // Advanced Operations
+    power(base, exponent) {
+        const result = Math.pow(base, exponent);
+        this.history.push(`${base}^${exponent} = ${result}`);
+        return result;
+    }
+    
+    squareRoot(n) {
+        if (n < 0) {
+            throw new Error("Cannot take square root of negative number");
+        }
+        const result = Math.sqrt(n);
+        this.history.push(`√${n} = ${result}`);
+        return result;
+    }
+    
+    percentage(value, percent) {
+        const result = (value * percent) / 100;
+        this.history.push(`${percent}% of ${value} = ${result}`);
+        return result;
+    }
+    
+    // Memory Functions
+    memoryStore(value) {
+        this.memory = value;
+        console.log(`Stored ${value} in memory`);
+    }
+    
+    memoryRecall() {
+        console.log(`Memory value: ${this.memory}`);
+        return this.memory;
+    }
+    
+    memoryClear() {
+        this.memory = 0;
+        console.log("Memory cleared");
+    }
+    
+    // History Functions
+    getHistory() {
+        if (this.history.length === 0) {
+            return "No calculations in history";
+        }
+        return this.history.join('\n');
+    }
+    
+    clearHistory() {
+        this.history = [];
+        console.log("History cleared");
+    }
+}
+
+// Input Validation
+function validateNumber(input) {
+    const num = parseFloat(input);
+    if (isNaN(num)) {
+        throw new Error("Invalid input: Please enter a valid number");
+    }
+    return num;
+}
+
+// Main Program
+function main() {
+    const calc = new Calculator();
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    
+    function showMenu() {
+        console.log("\n=== Simple Calculator ===");
+        console.log("1. Add");
+        console.log("2. Subtract");
+        console.log("3. Multiply");
+        console.log("4. Divide");
+        console.log("5. Power");
+        console.log("6. Square Root");
+        console.log("7. Percentage");
+        console.log("8. Show History");
+        console.log("9. Memory Store/Recall/Clear");
+        console.log("0. Exit");
+        console.log("========================");
+    }
+    
+    function askQuestion(question) {
+        return new Promise(resolve => {
+            rl.question(question, resolve);
+        });
+    }
+    
+    async function run() {
+        let running = true;
+        
+        while (running) {
+            showMenu();
+            const choice = await askQuestion("Enter choice: ");
+            
+            try {
+                switch(choice) {
+                    case '1':
+                        const a1 = validateNumber(await askQuestion("First number: "));
+                        const b1 = validateNumber(await askQuestion("Second number: "));
+                        console.log(`Result: ${calc.add(a1, b1)}`);
+                        break;
+                        
+                    case '2':
+                        const a2 = validateNumber(await askQuestion("First number: "));
+                        const b2 = validateNumber(await askQuestion("Second number: "));
+                        console.log(`Result: ${calc.subtract(a2, b2)}`);
+                        break;
+                        
+                    case '3':
+                        const a3 = validateNumber(await askQuestion("First number: "));
+                        const b3 = validateNumber(await askQuestion("Second number: "));
+                        console.log(`Result: ${calc.multiply(a3, b3)}`);
+                        break;
+                        
+                    case '4':
+                        const a4 = validateNumber(await askQuestion("First number: "));
+                        const b4 = validateNumber(await askQuestion("Second number: "));
+                        console.log(`Result: ${calc.divide(a4, b4)}`);
+                        break;
+                        
+                    case '5':
+                        const base = validateNumber(await askQuestion("Base: "));
+                        const exp = validateNumber(await askQuestion("Exponent: "));
+                        console.log(`Result: ${calc.power(base, exp)}`);
+                        break;
+                        
+                    case '6':
+                        const n = validateNumber(await askQuestion("Number: "));
+                        console.log(`Result: ${calc.squareRoot(n)}`);
+                        break;
+                        
+                    case '7':
+                        const val = validateNumber(await askQuestion("Value: "));
+                        const pct = validateNumber(await askQuestion("Percentage: "));
+                        console.log(`Result: ${calc.percentage(val, pct)}`);
+                        break;
+                        
+                    case '8':
+                        console.log("\n--- Calculation History ---");
+                        console.log(calc.getHistory());
+                        break;
+                        
+                    case '9':
+                        console.log("M+ Store, MR Recall, MC Clear");
+                        const memOp = await askQuestion("Enter operation (store/recall/clear): ");
+                        if (memOp === 'store') {
+                            const v = validateNumber(await askQuestion("Value to store: "));
+                            calc.memoryStore(v);
+                        } else if (memOp === 'recall') {
+                            calc.memoryRecall();
+                        } else if (memOp === 'clear') {
+                            calc.memoryClear();
+                        }
+                        break;
+                        
+                    case '0':
+                        running = false;
+                        console.log("Thank you for using the calculator!");
+                        break;
+                        
+                    default:
+                        console.log("Invalid choice. Please try again.");
+                }
+            } catch (error) {
+                console.log(`Error: ${error.message}`);
+            }
+        }
+        
+        rl.close();
+    }
+    
+    run();
+}
+
+// Run the calculator
+main();
