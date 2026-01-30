@@ -510,14 +510,33 @@ jobs:
           
           echo "CSV saved. Now saving detailed JSON..."
           
+          # Debug: Show current state before running script
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la *.json || echo "No JSON files in current dir"
+          echo "grade-result.json contents (first 100 chars):"
+          head -c 100 grade-result.json 2>/dev/null || echo "grade-result.json not found"
+          
           # Save detailed JSON using dedicated script
-          node scripts/save-detailed-results.js || echo "Warning: Detailed JSON save failed but continuing..."
+          echo "Running save-detailed-results.js..."
+          node scripts/save-detailed-results.js 2>&1 || {
+            echo "❌ save-detailed-results.js failed with exit code $?"
+            echo "Trying to debug..."
+            echo "Node version: $(node --version)"
+            echo "Scripts directory:"
+            ls -la scripts/ || echo "No scripts dir"
+          }
           
           echo "✅ Results saved successfully"
           
           # Debug: Check what was created
           echo "Contents of results/details/:"
           ls -la results/details/ || echo "Directory listing failed"
+          if ls results/details/*.json 2>/dev/null; then
+            echo "JSON files found!"
+          else
+            echo "No JSON files in results/details/"
+          fi
           
       - name: Commit results with retry
         if: steps.extract.outputs.is_submission == 'true'
