@@ -1,0 +1,9 @@
+// STUDENT NAME: Debug Three
+// ROLL NUMBER: 2024DEBUG03
+// EMAIL: debug.three@test.edu
+// BATCH: 2024
+// PRACTICAL NUMBER: 1
+
+// Simple inline test for grading
+function add(a, b) { return a + b; }
+console.log(add(2, 3));
