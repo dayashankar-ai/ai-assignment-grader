@@ -1,0 +1,8 @@
+// STUDENT NAME: Debug Six
+// ROLL NUMBER: 2024DEBUG06
+// EMAIL: debug.six@test.edu
+// BATCH: 2024
+// PRACTICAL NUMBER: 1
+
+const test = "simple test";
+console.log(test);
