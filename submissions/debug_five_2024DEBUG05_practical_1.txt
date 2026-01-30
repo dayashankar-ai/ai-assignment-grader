@@ -1,0 +1,7 @@
+// STUDENT NAME: Debug Five
+// ROLL NUMBER: 2024DEBUG05
+// EMAIL: debug.five@test.edu
+// BATCH: 2024
+// PRACTICAL NUMBER: 1
+
+console.log("Hello World");
