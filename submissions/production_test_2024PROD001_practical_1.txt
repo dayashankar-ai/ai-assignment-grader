@@ -1,0 +1,89 @@
+// STUDENT NAME: Production Test
+// ROLL NUMBER: 2024PROD001
+// EMAIL: prod.test@university.edu
+// BATCH: 2024
+// YEAR: III
+// PRACTICAL NUMBER: 1
+
+// Production test submission with good content
+
+class AdvancedCalculator {
+    constructor() {
+        this.memory = 0;
+        this.history = [];
+    }
+    
+    add(a, b) {
+        const result = parseFloat(a) + parseFloat(b);
+        this.history.push(`${a} + ${b} = ${result}`);
+        return result;
+    }
+    
+    subtract(a, b) {
+        const result = parseFloat(a) - parseFloat(b);
+        this.history.push(`${a} - ${b} = ${result}`);
+        return result;
+    }
+    
+    multiply(a, b) {
+        const result = parseFloat(a) * parseFloat(b);
+        this.history.push(`${a} × ${b} = ${result}`);
+        return result;
+    }
+    
+    divide(a, b) {
+        if (parseFloat(b) === 0) {
+            throw new Error("Cannot divide by zero");
+        }
+        const result = parseFloat(a) / parseFloat(b);
+        this.history.push(`${a} ÷ ${b} = ${result}`);
+        return result;
+    }
+    
+    power(base, exponent) {
+        const result = Math.pow(parseFloat(base), parseFloat(exponent));
+        this.history.push(`${base}^${exponent} = ${result}`);
+        return result;
+    }
+    
+    squareRoot(n) {
+        if (parseFloat(n) < 0) {
+            throw new Error("Cannot calculate square root of negative number");
+        }
+        const result = Math.sqrt(parseFloat(n));
+        this.history.push(`√${n} = ${result}`);
+        return result;
+    }
+    
+    percentage(value, percent) {
+        const result = (parseFloat(value) * parseFloat(percent)) / 100;
+        this.history.push(`${percent}% of ${value} = ${result}`);
+        return result;
+    }
+    
+    memoryStore(value) {
+        this.memory = parseFloat(value);
+        return `Stored ${value} in memory`;
+    }
+    
+    memoryRecall() {
+        return this.memory;
+    }
+    
+    memoryClear() {
+        this.memory = 0;
+        return "Memory cleared";
+    }
+    
+    getHistory() {
+        return this.history;
+    }
+    
+    clearHistory() {
+        this.history = [];
+        return "History cleared";
+    }
+}
+
+// Export for testing
+module.exports = AdvancedCalculator;
