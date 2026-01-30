@@ -1,0 +1,69 @@
+// STUDENT NAME: Verify Test
+// ROLL NUMBER: 2024VERIFY99
+// EMAIL: verify.test@university.edu
+// BATCH: 2024
+// YEAR: III
+// PRACTICAL NUMBER: 1
+
+// Calculator Implementation for Practical 1
+// This is a well-structured submission
+
+const readline = require('readline');
+
+class Calculator {
+    constructor() {
+        this.memory = 0;
+        this.history = [];
+    }
+    
+    add(a, b) {
+        const result = a + b;
+        this.history.push(`${a} + ${b} = ${result}`);
+        return result;
+    }
+    
+    subtract(a, b) {
+        const result = a - b;
+        this.history.push(`${a} - ${b} = ${result}`);
+        return result;
+    }
+    
+    multiply(a, b) {
+        const result = a * b;
+        this.history.push(`${a} * ${b} = ${result}`);
+        return result;
+    }
+    
+    divide(a, b) {
+        if (b === 0) {
+            throw new Error("Cannot divide by zero");
+        }
+        const result = a / b;
+        this.history.push(`${a} / ${b} = ${result}`);
+        return result;
+    }
+    
+    power(base, exp) {
+        return Math.pow(base, exp);
+    }
+    
+    sqrt(n) {
+        if (n < 0) throw new Error("Cannot sqrt negative");
+        return Math.sqrt(n);
+    }
+    
+    getHistory() {
+        return this.history;
+    }
+    
+    clearHistory() {
+        this.history = [];
+    }
+}
+
+// Test
+const calc = new Calculator();
+console.log(calc.add(5, 3));
+console.log(calc.subtract(10, 4));
+console.log(calc.multiply(6, 7));
+console.log(calc.divide(20, 5));
