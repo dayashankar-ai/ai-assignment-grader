@@ -1,0 +1,16 @@
+// STUDENT NAME: Debug Two
+// ROLL NUMBER: 2024DEBUG02
+// EMAIL: debug.two@test.edu
+// BATCH: 2024
+// PRACTICAL NUMBER: 1
+
+class SimpleCalc {
+    add(a, b) { return a + b; }
+    sub(a, b) { return a - b; }
+    mul(a, b) { return a * b; }
+    div(a, b) { return b ? a / b : "Error"; }
+}
+
+const calc = new SimpleCalc();
+console.log(calc.add(5, 3));
+console.log(calc.mul(4, 7));
