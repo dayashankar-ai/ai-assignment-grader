@@ -1,0 +1,152 @@
+STUDENT_NAME: Pankaj Singh
+STUDENT_ID: 2024WOU022
+STUDENT_EMAIL: pankaj.singh@woxsen.edu.in
+BATCH: 2026
+PRACTICAL: 1
+SUBMISSION_DATE: 2026-01-30T16:27:05.234Z
+
+================== CODE/DOCUMENTATION ==================
+
+# Practical 1: Basic Prompt Engineering Exploration
+
+## Introduction
+This practical explores the fundamentals of prompt engineering for Large Language Models. I will demonstrate various prompt techniques learned in lectures 1-3.
+
+## Part 1: Understanding Basic Prompt Structure
+
+### Simple Prompt Analysis
+A basic prompt is a straightforward instruction:
+```python
+basic_prompt = "Explain photosynthesis"
+```
+
+**Issues with this prompt:**
+- No specified audience
+- No length requirement
+- No format specified
+
+### Improved Prompt with Context
+```python
+improved_prompt = """
+Role: You are a biology teacher.
+Audience: 5th grade students
+Task: Explain photosynthesis
+Requirements:
+- Use simple language
+- Include an analogy
+- Keep it under 100 words
+"""
+```
+
+**Why this is better:**
+- Clear role assignment
+- Defined audience helps calibrate complexity
+- Specific requirements guide output
+
+## Part 2: Prompt Techniques Demonstrated
+
+### Technique 1: Role-based Prompting
+```python
+def create_role_prompt(role, task):
+    return f"""
+    You are a {role}.
+    Your task is to {task}.
+    Respond in a professional manner appropriate to your role.
+    """
+
+# Example usage
+prompt1 = create_role_prompt("senior Python developer", 
+    "review this code for security vulnerabilities")
+```
+
+### Technique 2: Few-shot Learning
+```python
+few_shot_prompt = """
+I want you to classify customer feedback as positive, negative, or neutral.
+
+Examples:
+1. "Great product, love it!" -> positive
+2. "Terrible experience, never again" -> negative  
+3. "The product is okay" -> neutral
+
+Now classify:
+"This exceeded my expectations!"
+"""
+```
+
+### Technique 3: Chain of Thought Prompting
+```python
+cot_prompt = """
+Solve this step by step:
+Question: If a train travels 120 km in 2 hours, what is its average speed?
+
+Think through:
+1. First, identify what we know
+2. Then, apply the relevant formula
+3. Finally, calculate the answer
+
+Show your reasoning at each step.
+"""
+```
+
+## Part 3: Testing Different Prompt Variations
+
+I tested the same task with different prompt styles:
+
+| Prompt Style | Response Quality | Specificity |
+|-------------|------------------|-------------|
+| Basic | Generic | Low |
+| With Context | Better | Medium |
+| With Examples | Best | High |
+
+### Testing Code
+```python
+import openai
+
+def test_prompt(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
+    )
+    return response.choices[0].message.content
+
+# Test different prompts
+results = {}
+for prompt_type, prompt in prompts.items():
+    results[prompt_type] = test_prompt(prompt)
+```
+
+## Part 4: Error Handling
+```python
+def safe_prompt_request(prompt, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return test_prompt(prompt)
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2 ** attempt)  # Exponential backoff
+```
+
+## Key Learnings
+
+1. **Specificity matters**: More specific prompts yield more useful responses
+2. **Context is crucial**: Providing role and audience improves relevance
+3. **Examples help**: Few-shot learning guides the model effectively
+4. **Iteration is key**: Refining prompts through testing improves results
+
+## Challenges Faced
+- Initially prompts were too vague
+- Had to learn to balance specificity with flexibility
+- Understanding token limits and their impact
+
+## Conclusion
+This practical taught me the fundamentals of effective prompt engineering. I learned that well-structured prompts with clear context and examples produce significantly better results than vague instructions.
+
+## References
+- Course Lectures 1-3
+- OpenAI API Documentation
+- "Prompt Engineering Guide" - Online Resource
+
+================== END OF SUBMISSION ==================
