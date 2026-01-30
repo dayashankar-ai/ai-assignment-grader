@@ -1,0 +1,53 @@
+STUDENT_NAME: Manoj Kumar
+STUDENT_ID: 2024CS011
+STUDENT_EMAIL: manoj.kumar@example.com
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This practical covers the fundamentals of prompt engineering and demonstrates understanding of LLM interactions.
+
+## Part 1: Simple Prompts
+
+### Prompt 1: Information Extraction
+**Prompt:** "What are the three main components of machine learning?"
+
+**Response:** The LLM explained:
+1. Data - the training dataset
+2. Model - the algorithm/architecture
+3. Training - the learning process
+
+**Analysis:** Clear, direct question yielded structured response.
+
+### Prompt 2: Summarization
+**Prompt:** "Summarize the concept of neural networks in 2 sentences."
+
+**Response:** Neural networks are computing systems inspired by biological brains, consisting of interconnected nodes. They learn patterns from data through adjusting connection weights during training.
+
+**Analysis:** Constraint on sentence count was respected.
+
+## Part 2: Prompt Refinement
+
+### Initial Prompt
+"Explain AI"
+
+**Issues:** Too vague, no context, unclear scope.
+
+### Refined Prompt  
+"Explain artificial intelligence to a first-year computer science student. Focus on: 1) Definition, 2) Types (narrow vs general AI), 3) One real-world example. Keep it under 150 words."
+
+**Improvements:** Added audience, structure, scope, and length constraint.
+
+## Part 3: Testing
+
+### Experiment 1: Temperature Settings
+- Low temperature (0.2): More consistent, factual responses
+- High temperature (0.8): More creative, varied responses
+
+### Experiment 2: Few-shot Learning
+Providing examples in the prompt improved response format consistency.
+
+## Conclusion
+Effective prompts are specific, structured, and include appropriate constraints for the desired output.
