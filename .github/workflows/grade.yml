@@ -238,15 +238,19 @@ jobs:
               const filename = path.basename(filePath);
               const filenameMatch = filename.match(/([\w_]+)_(\d+[A-Z]*\d*)_practical_(\d+)/i);
               
-              // IMPROVED: More robust regex patterns to match multiple header formats
-              // Matches: STUDENT_NAME:, Student Name:, Name:, student_name: etc.
-              const nameFromContent = content.match(/(?:STUDENT[_\s]?NAME|NAME)\s*:\s*(.+)/i);
-              const idFromContent = content.match(/(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?|ID)\s*:\s*(.+)/i);
-              const emailFromContent = content.match(/(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)/i);
-              const batchFromContent = content.match(/BATCH\s*:\s*(\d+)/i);
-              const practicalFromContent = content.match(/(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)/i);
+              // FIXED: Use strict regex that matches ONLY at START of line (same as grader.js)
+              // Only check first 10 lines to avoid matching content in assignment body
+              const headerLines = content.split('\n').slice(0, 10).join('\n');
+              
+              const nameFromContent = headerLines.match(/^STUDENT[_\s]?NAME\s*:\s*(.+)$/im);
+              const idFromContent = headerLines.match(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/im);
+              const emailFromContent = headerLines.match(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/im);
+              const batchFromContent = headerLines.match(/^BATCH\s*:\s*(\d+)$/im);
+              const practicalFromContent = headerLines.match(/^(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)$/im);
               
               // Debug logging
+              console.log('First 10 lines of content:');
+              console.log(headerLines);
               console.log('Content extraction results:');
               console.log('  Name from content:', nameFromContent ? nameFromContent[1].trim() : 'NOT FOUND');
               console.log('  ID from content:', idFromContent ? idFromContent[1].trim() : 'NOT FOUND');
