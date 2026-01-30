@@ -445,13 +445,14 @@
                 let fileContent = await readFileAsText(selectedFile);
 
                 // CRITICAL FIX: Remove any existing headers from uploaded file to prevent conflicts
-                // Strip headers like STUDENT_NAME:, STUDENT_ID:, STUDENT_EMAIL:, BATCH:, PRACTICAL:, SUBMISSION_DATE:
-                fileContent = fileContent.replace(/^STUDENT_NAME:\s*.+$/gim, '');
-                fileContent = fileContent.replace(/^STUDENT_ID:\s*.+$/gim, '');
-                fileContent = fileContent.replace(/^STUDENT_EMAIL:\s*.+$/gim, '');
-                fileContent = fileContent.replace(/^BATCH:\s*.+$/gim, '');
-                fileContent = fileContent.replace(/^PRACTICAL:\s*.+$/gim, '');
-                fileContent = fileContent.replace(/^SUBMISSION_DATE:\s*.+$/gim, '');
+                // IMPROVED: More comprehensive regex to match all header formats
+                // Matches: STUDENT_NAME:, Student Name:, Name:, student_name: etc.
+                fileContent = fileContent.replace(/^(?:STUDENT[_\s]?NAME|NAME)\s*:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?|ID)\s*:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^BATCH\s*:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*.+$/gim, '');
+                fileContent = fileContent.replace(/^SUBMISSION[_\s]?DATE\s*:\s*.+$/gim, '');
                 
                 // Remove any header separator lines
                 fileContent = fileContent.replace(/^={10,}.*={10,}$/gim, '');

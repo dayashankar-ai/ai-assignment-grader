@@ -220,28 +220,42 @@ jobs:
               const filename = path.basename(filePath);
               const filenameMatch = filename.match(/([\w_]+)_(\d+[A-Z]*\d*)_practical_(\d+)/i);
               
-              // Try to extract student info from file content first
-              const nameFromContent = content.match(/STUDENT_NAME:\s*(.+)/i);
-              const idFromContent = content.match(/STUDENT_ID:\s*(.+)/i);
-              const emailFromContent = content.match(/STUDENT_EMAIL:\s*(.+)/i);
-              const batchFromContent = content.match(/BATCH:\s*(\d+)/i);
-              const practicalFromContent = content.match(/PRACTICAL:\s*(\d+)/i);
+              // IMPROVED: More robust regex patterns to match multiple header formats
+              // Matches: STUDENT_NAME:, Student Name:, Name:, student_name: etc.
+              const nameFromContent = content.match(/(?:STUDENT[_\s]?NAME|NAME)\s*:\s*(.+)/i);
+              const idFromContent = content.match(/(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?|ID)\s*:\s*(.+)/i);
+              const emailFromContent = content.match(/(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)/i);
+              const batchFromContent = content.match(/BATCH\s*:\s*(\d+)/i);
+              const practicalFromContent = content.match(/(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)/i);
               
+              // Debug logging
+              console.log('Content extraction results:');
+              console.log('  Name from content:', nameFromContent ? nameFromContent[1].trim() : 'NOT FOUND');
+              console.log('  ID from content:', idFromContent ? idFromContent[1].trim() : 'NOT FOUND');
+              console.log('  Name from filename:', filenameMatch ? filenameMatch[1] : 'NOT FOUND');
+              
+              // CRITICAL FIX: NEVER use pusher name as student name - this was the root cause bug!
+              // If we can't find the student name, use filename or mark as Unknown for review
               submissionData = {
                 studentName: (nameFromContent ? nameFromContent[1].trim() : null) || 
                             (filenameMatch ? filenameMatch[1].replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : null) || 
-                            context.payload.pusher?.name || 'Unknown',
+                            'Unknown Student',  // REMOVED: context.payload.pusher?.name fallback
                 rollNumber: (idFromContent ? idFromContent[1].trim() : null) || 
                            (filenameMatch ? filenameMatch[2] : 'Unknown'),
                 batch: (batchFromContent ? batchFromContent[1] : null) || '2024',
                 year: 'III',
                 studentEmail: (emailFromContent ? emailFromContent[1].trim() : null) || 
-                             context.payload.pusher?.email || 'unknown@example.com',
+                             'unknown@example.com',  // REMOVED: context.payload.pusher?.email fallback
                 practicalNumber: (practicalFromContent ? practicalFromContent[1] : null) || 
                                 (filenameMatch ? filenameMatch[3] : '1'),
                 submissionContent: content,
                 issueNumber: null
               };
+              
+              console.log('Final extracted data:');
+              console.log('  Student Name:', submissionData.studentName);
+              console.log('  Roll Number:', submissionData.rollNumber);
+              console.log('  Email:', submissionData.studentEmail);
             }
             
             // Sanitize and validate data
