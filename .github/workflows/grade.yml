@@ -476,6 +476,13 @@ jobs:
         run: |
           echo "💾 Saving results to CSV and detailed JSON..."
           
+          # Debug: Show environment variables
+          echo "DEBUG: STUDENT_NAME=${STUDENT_NAME}"
+          echo "DEBUG: ROLL_NUMBER=${ROLL_NUMBER}"
+          echo "DEBUG: PRACTICAL_NUMBER=${PRACTICAL_NUMBER}"
+          echo "DEBUG: SUBMISSION_FILE=${SUBMISSION_FILE}"
+          echo "DEBUG: FINAL_SCORE=${FINAL_SCORE}"
+          
           # Create results directory if it doesn't exist
           mkdir -p results
           mkdir -p results/details
@@ -507,8 +514,15 @@ jobs:
           
           echo "✅ Results saved successfully"
           
+          # Debug: Check what was created
+          echo "Contents of results/details/:"
+          ls -la results/details/ || echo "Directory listing failed"
+          
       - name: Commit results with retry
         if: steps.extract.outputs.is_submission == 'true'
+        env:
+          ROLL_NUMBER: ${{ env.ROLL_NUMBER }}
+          PRACTICAL_NUMBER: ${{ env.PRACTICAL_NUMBER }}
         run: |
           echo "📤 Committing results..."
           
@@ -518,12 +532,28 @@ jobs:
           RETRY_COUNT=0
           MAX_RETRIES=${{ env.MAX_RETRIES }}
           
+          # Debug git status
+          echo "Git status before add:"
+          git status --short
+          
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             # Pull latest changes to avoid conflicts
             git pull --rebase origin ${{ github.ref_name }} || true
             
+            # Add CSV
             git add results/grades.csv
-            git add results/details/ || true
+            
+            # Add all JSON files in details directory explicitly
+            if [ -d "results/details" ]; then
+              echo "Adding files from results/details/..."
+              find results/details -name "*.json" -exec git add {} \; 2>/dev/null || true
+              git add results/details/*.json 2>/dev/null || true
+              git add results/details/ 2>/dev/null || true
+            fi
+            
+            # Debug git status
+            echo "Git status after add:"
+            git status --short
             
             if git diff --staged --quiet; then
               echo "No changes to commit"

@@ -94,10 +94,22 @@ function main() {
   // Save to file
   const detailFile = path.join(detailsDir, `${rollNumber}_practical_${practicalNumber}.json`);
   console.log('Saving to:', detailFile);
+  console.log('Result keys:', Object.keys(detailedResult));
   
   try {
     fs.writeFileSync(detailFile, JSON.stringify(detailedResult, null, 2));
     console.log('✅ Detailed JSON saved successfully to:', detailFile);
+    
+    // Verify file was saved
+    if (fs.existsSync(detailFile)) {
+      const stats = fs.statSync(detailFile);
+      console.log('✅ File verified, size:', stats.size, 'bytes');
+      
+      // List directory contents
+      console.log('Files in results/details/:');
+      const files = fs.readdirSync(detailsDir);
+      files.forEach(f => console.log('  -', f));
+    }
   } catch (error) {
     console.error('Error saving detailed results:', error.message);
     process.exit(1);
