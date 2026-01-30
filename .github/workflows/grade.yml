@@ -274,16 +274,15 @@ jobs:
               const filename = path.basename(filePath);
               const filenameMatch = filename.match(/([\w_]+)_(\d+[A-Z]*\d*)_practical_(\d+)/i);
               
-              // FIXED: Use regex that allows optional comment prefixes (// or * or #)
-              // Only check first 15 lines to avoid matching content in assignment body
-              const headerLines = content.split('\n').slice(0, 15).join('\n');
+              // FIXED: Use strict regex that matches ONLY at START of line (same as grader.js)
+              // Only check first 10 lines to avoid matching content in assignment body
+              const headerLines = content.split('\n').slice(0, 10).join('\n');
               
-              // Regex patterns that handle: "STUDENT NAME:", "// STUDENT NAME:", "* Student Name:", "# STUDENT_NAME:"
-              const nameFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*STUDENT[_\s]?NAME\s*:\s*(.+)$/im);
-              const idFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/im);
-              const emailFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/im);
-              const batchFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*BATCH\s*:\s*(\d+)$/im);
-              const practicalFromContent = headerLines.match(/^(?:\/\/|\/?\*|#)?\s*(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)$/im);
+              const nameFromContent = headerLines.match(/^STUDENT[_\s]?NAME\s*:\s*(.+)$/im);
+              const idFromContent = headerLines.match(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/im);
+              const emailFromContent = headerLines.match(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/im);
+              const batchFromContent = headerLines.match(/^BATCH\s*:\s*(\d+)$/im);
+              const practicalFromContent = headerLines.match(/^(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(\d+)$/im);
               
               // Debug logging
               console.log('First 10 lines of content:');
@@ -510,46 +509,14 @@ jobs:
           
           echo "CSV saved. Now saving detailed JSON..."
           
-          # Create detailed JSON by copying grade-result.json and adding extra fields
-          DETAIL_FILE="results/details/${ROLL_NUMBER}_practical_${PRACTICAL_NUMBER}.json"
-          echo "Creating detailed JSON at: $DETAIL_FILE"
-          
-          if [ -f "grade-result.json" ]; then
-            # Read submission content with proper escaping for JSON
-            SUB_CONTENT=""
-            if [ -f "${SUBMISSION_FILE}" ]; then
-              # Escape special characters for JSON
-              SUB_CONTENT=$(cat "${SUBMISSION_FILE}" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g' | head -c 5000)
-            fi
-            
-            # Copy grade result and add student info using Node.js (simpler approach)
-            cp grade-result.json "$DETAIL_FILE.tmp"
-            
-            node -e "
-              const fs = require('fs');
-              const data = JSON.parse(fs.readFileSync('$DETAIL_FILE.tmp', 'utf-8'));
-              data.studentName = '${STUDENT_NAME}';
-              data.rollNumber = '${ROLL_NUMBER}';
-              data.email = '${STUDENT_EMAIL}';
-              data.batch = '${BATCH}';
-              data.practicalNumber = '${PRACTICAL_NUMBER}';
-              data.timestamp = new Date().toISOString();
-              data.aiUsagePercent = parseInt('${AI_PERCENT}') || 0;
-              data.submissionText = '';
-              data.instructorComments = '';
-              fs.writeFileSync('$DETAIL_FILE', JSON.stringify(data, null, 2));
-              console.log('Created: $DETAIL_FILE');
-            " || echo "Node.js merge failed"
-            
-            rm -f "$DETAIL_FILE.tmp"
-            
-            echo "Checking if file was created..."
-            ls -la results/details/ || echo "Could not list directory"
-          else
-            echo "grade-result.json not found, skipping detailed JSON"
-          fi
+          # Save detailed JSON using dedicated script
+          node scripts/save-detailed-results.cjs || echo "Warning: Detailed JSON save failed but continuing..."
           
           echo "✅ Results saved successfully"
+          
+          # Debug: Check what was created
+          echo "Contents of results/details/:"
+          ls -la results/details/ || echo "Directory listing failed"
           
       - name: Commit results with retry
         if: steps.extract.outputs.is_submission == 'true'

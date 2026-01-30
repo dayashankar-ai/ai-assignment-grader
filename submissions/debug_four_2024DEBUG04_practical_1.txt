@@ -1,9 +1,0 @@
-// STUDENT NAME: Debug Four
-// ROLL NUMBER: 2024DEBUG04
-// EMAIL: debug.four@test.edu
-// BATCH: 2024
-// PRACTICAL NUMBER: 1
-
-const x = 5;
-const y = 10;
-console.log(x + y);

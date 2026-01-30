@@ -17,15 +17,14 @@ function extractStudentInfo(text) {
     practical: ''
   };
   
-  // FIXED: Only check first 15 lines (header section) to avoid matching content in assignment body
-  const lines = text.split('\n').slice(0, 15);
+  // FIXED: Only check first 10 lines (header section) to avoid matching content in assignment body
+  const lines = text.split('\n').slice(0, 10);
   
   for (const line of lines) {
-    // Strip common comment prefixes before matching
-    let trimmedLine = line.trim();
-    trimmedLine = trimmedLine.replace(/^(?:\/\/|\/?\*|#)\s*/, '');
+    const trimmedLine = line.trim();
     
-    // FIXED: Use regex that works on cleaned line (comment prefix stripped)
+    // FIXED: Use strict regex that matches ONLY at start of line
+    // This prevents matching "- Name: John Smith" from assignment content
     const studentNameMatch = trimmedLine.match(/^STUDENT[_\s]?NAME\s*:\s*(.+)$/i);
     const studentIdMatch = trimmedLine.match(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/i);
     const studentEmailMatch = trimmedLine.match(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/i);
