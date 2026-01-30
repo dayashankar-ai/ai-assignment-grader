@@ -1,0 +1,140 @@
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+This practical demonstrates my understanding of prompt engineering concepts and techniques for working with Large Language Models (LLMs).
+
+## Part 1: Simple Prompts
+
+### Prompt 1: Information Extraction
+**Prompt:** "Extract the key details from this text: 'Priya Patel, 28 years old, is a Data Scientist at Infosys in Bangalore, specializing in NLP and computer vision.'"
+
+**Response:** The LLM extracted:
+- Name: Priya Patel
+- Age: 28
+- Occupation: Data Scientist
+- Company: Infosys
+- Location: Bangalore
+- Specialization: NLP and Computer Vision
+
+**Analysis:** The explicit instruction to "extract key details" helped the model structure the output clearly.
+
+### Prompt 2: Text Summarization
+**Prompt:** "Summarize the benefits of cloud computing in exactly 3 bullet points for a business audience."
+
+**Response:** 
+- Cost savings through pay-as-you-go model
+- Scalability to handle varying workloads
+- Enhanced collaboration with remote access
+
+**Analysis:** Multiple constraints (format, count, audience) were respected.
+
+## Part 2: Prompt Refinement
+
+### Initial Prompt
+"Explain neural networks"
+
+**Issues Identified:**
+- Too broad scope
+- No target audience specified
+- No format requirements
+- No length constraints
+
+### Refined Prompt
+"Explain how neural networks work to a second-year computer science student. Structure your response as: 1) Basic concept with analogy, 2) Key components (neurons, layers, weights), 3) Simple example of image classification. Use 150-200 words."
+
+**Improvements Made:**
+- Added specific audience (CS student)
+- Defined clear structure
+- Included practical example
+- Set word limit
+
+**Result:** Received a well-structured, appropriately technical response.
+
+## Part 3: Testing Approaches
+
+### Experiment 1: Temperature Variation
+Tested the same prompt at different temperatures:
+
+| Temperature | Output Characteristics |
+|-------------|----------------------|
+| 0.2 | Consistent, factual, predictable |
+| 0.5 | Balanced creativity and accuracy |
+| 0.8 | More varied, creative responses |
+
+**Conclusion:** Lower temperature for factual tasks, higher for creative ones.
+
+### Experiment 2: Few-Shot Learning
+Provided 2 examples before asking the model to classify sentiment:
+
+**Prompt with examples:**
+```
+Example 1: "This product is amazing!" -> Positive
+Example 2: "Terrible experience, waste of money" -> Negative
+Now classify: "Decent quality but overpriced" -> ?
+```
+
+**Result:** Model correctly identified "Mixed/Neutral" sentiment.
+
+### Experiment 3: Chain-of-Thought
+Asked model to solve a problem step-by-step:
+
+**Without CoT:** Often got incorrect final answers
+**With CoT:** Accuracy improved significantly as reasoning was visible
+
+## Code Implementation
+
+```python
+import openai
+
+def create_prompt(task, context, constraints):
+    """
+    Creates a structured prompt with task, context, and constraints.
+    """
+    prompt = f"""
+    Task: {task}
+    Context: {context}
+    Constraints: {constraints}
+    
+    Please provide your response following the above guidelines.
+    """
+    return prompt.strip()
+
+def get_completion(prompt, temperature=0.7):
+    """
+    Gets completion from the LLM with error handling.
+    """
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Example usage
+task = "Summarize the key points"
+context = "Article about machine learning applications"
+constraints = "Use 3 bullet points, business-friendly language"
+
+my_prompt = create_prompt(task, context, constraints)
+result = get_completion(my_prompt, temperature=0.5)
+print(result)
+```
+
+## Key Learnings
+
+1. **Specificity matters:** Vague prompts lead to vague responses
+2. **Structure helps:** Numbered lists, bullet points guide the output
+3. **Context is crucial:** Providing background improves relevance
+4. **Iteration improves results:** Refining prompts based on output quality
+5. **Temperature affects creativity:** Adjust based on task requirements
+
+## Conclusion
+Prompt engineering is both an art and a science. Through systematic testing and refinement, we can significantly improve LLM outputs for various tasks.
+
+## References
+1. OpenAI Documentation - Prompt Engineering Guide
+2. "The Art of Prompt Design" - Research Paper, 2024
+3. Anthropic's Claude Documentation on Effective Prompting

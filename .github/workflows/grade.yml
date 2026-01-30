@@ -462,13 +462,14 @@ jobs:
             fi
           done
           
-      - name: Save results to CSV with conflict resolution
+      - name: Save results to CSV and JSON with conflict resolution
         if: steps.extract.outputs.is_submission == 'true'
         run: |
-          echo "💾 Saving results to CSV..."
+          echo "💾 Saving results to CSV and detailed JSON..."
           
           # Create results directory if it doesn't exist
           mkdir -p results
+          mkdir -p results/details
           
           # Check if CSV exists, if not create with headers
           if [ ! -f results/grades.csv ]; then
@@ -477,14 +478,43 @@ jobs:
           
           # Extract data from JSON
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          FEEDBACK=$(cat grade-result.json | grep -o '"overallFeedback": *"[^"]*"' | cut -d'"' -f4 | head -c 100 | sed 's/"/""/g')
+          FEEDBACK=$(cat grade-result.json | grep -o '"overallFeedback": *"[^"]*"' | cut -d'"' -f4 | head -c 200 | sed 's/"/""/g')
           GRADE_LETTER=$(cat grade-result.json | grep -o '"gradeLetter": *"[^"]*"' | cut -d'"' -f4)
           AI_DETECTED=$([ ${{ env.AI_PERCENT }} -gt 60 ] && echo "Yes" || echo "No")
           
           # Append to CSV (matching existing format)
           echo "$TIMESTAMP,${{ env.STUDENT_NAME }},${{ env.ROLL_NUMBER }},${{ env.STUDENT_EMAIL }},${{ env.PRACTICAL_NUMBER }},${{ env.FINAL_SCORE }},100,$GRADE_LETTER,$AI_DETECTED,${{ env.AI_PERCENT }}%,\"$FEEDBACK\"" >> results/grades.csv
           
-          echo "✅ Results saved to CSV"
+          # Save detailed JSON with all feedback
+          # Add student info and submission content to the grade result
+          DETAIL_FILE="results/details/${{ env.ROLL_NUMBER }}_practical_${{ env.PRACTICAL_NUMBER }}.json"
+          
+          # Read submission content
+          SUBMISSION_CONTENT=$(cat "${{ env.SUBMISSION_FILE }}" | jq -Rs .)
+          
+          # Read grade result and add extra fields
+          jq --arg name "${{ env.STUDENT_NAME }}" \
+             --arg roll "${{ env.ROLL_NUMBER }}" \
+             --arg email "${{ env.STUDENT_EMAIL }}" \
+             --arg batch "${{ env.BATCH }}" \
+             --arg practical "${{ env.PRACTICAL_NUMBER }}" \
+             --arg timestamp "$TIMESTAMP" \
+             --arg aiPercent "${{ env.AI_PERCENT }}" \
+             --argjson submission "$SUBMISSION_CONTENT" \
+             '. + {
+               studentName: $name,
+               rollNumber: $roll,
+               email: $email,
+               batch: $batch,
+               practicalNumber: $practical,
+               timestamp: $timestamp,
+               aiUsagePercent: ($aiPercent | tonumber),
+               submissionText: $submission,
+               instructorComments: ""
+             }' grade-result.json > "$DETAIL_FILE"
+          
+          echo "✅ Detailed results saved to $DETAIL_FILE"
+          echo "✅ Summary results saved to CSV"
           
       - name: Commit results with retry
         if: steps.extract.outputs.is_submission == 'true'
@@ -502,6 +532,7 @@ jobs:
             git pull --rebase origin ${{ github.ref_name }} || true
             
             git add results/grades.csv
+            git add results/details/ || true
             
             if git diff --staged --quiet; then
               echo "No changes to commit"

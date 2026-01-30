@@ -934,13 +934,15 @@
                     const totalScore = parseInt(cols[5]) || 0;
                     const aiConfidence = parseInt(cols[9]) || 0;
                     const aiDetected = cols[8] === 'Yes';
+                    const rollNumber = cols[2];
+                    const practicalNum = parseInt(cols[4]) || 1;
                     
                     allSubmissions.push({
                         timestamp: cols[0],
                         studentName: cols[1],
-                        rollNumber: cols[2],
+                        rollNumber: rollNumber,
                         email: cols[3],
-                        practicalNumber: parseInt(cols[4]) || 1,
+                        practicalNumber: practicalNum,
                         baseScore: totalScore,
                         finalScore: totalScore,
                         maxScore: parseInt(cols[6]) || 100,
@@ -948,12 +950,15 @@
                         aiProbability: aiConfidence,
                         aiDetected: aiDetected,
                         aiPenalty: 0,
-                        feedback: cols.slice(10).join(','),
+                        feedback: cols.slice(10).join(',').replace(/^"|"$/g, ''),
                         batch: '2024',
                         year: 'III',
                         strengths: [],
                         improvements: [],
-                        submissionText: ''
+                        criteria: [],
+                        submissionText: '',
+                        detailsLoaded: false,
+                        detailsUrl: `https://raw.githubusercontent.com/dayashankar-ai/ai-assignment-grader/main/results/details/${rollNumber}_practical_${practicalNum}.json`
                     });
                 }
                 
@@ -967,6 +972,38 @@
                 console.error('Error loading data:', error);
                 showError('Failed to load submissions. Please check your connection.');
             }
+        }
+        
+        // Load detailed JSON for a specific submission
+        async function loadDetailedResults(submission) {
+            if (submission.detailsLoaded) return submission;
+            
+            try {
+                const response = await fetch(submission.detailsUrl);
+                if (response.ok) {
+                    const details = await response.json();
+                    
+                    // Merge details into submission
+                    submission.criteria = details.criteria || [];
+                    submission.strengths = details.strengths || [];
+                    submission.improvements = details.improvements || [];
+                    submission.submissionText = details.submissionText || '';
+                    submission.overallFeedback = details.overallFeedback || submission.feedback;
+                    submission.learningEvidence = details.learningEvidence || [];
+                    submission.codeQuality = details.codeQuality || null;
+                    submission.missingElements = details.missingElements || [];
+                    submission.bonusElements = details.bonusElements || [];
+                    submission.instructorComments = details.instructorComments || '';
+                    submission.baseScore = details.baseScore || submission.baseScore;
+                    submission.aiPenalty = details.aiPenalty || 0;
+                    submission.finalScore = details.finalScore || submission.finalScore;
+                    submission.detailsLoaded = true;
+                }
+            } catch (error) {
+                console.log('Could not load detailed results:', error.message);
+            }
+            
+            return submission;
         }
 
         // Generate mock data for demonstration
@@ -1244,15 +1281,134 @@
         }
 
         // View details modal
-        function viewDetails(submission) {
+        async function viewDetails(submission) {
             const modal = document.getElementById('detailModal');
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
 
             modalTitle.textContent = `${submission.studentName} - Practical ${submission.practicalNumber}`;
+            
+            // Show loading state
+            modalBody.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading detailed results...</p></div>';
+            modal.classList.add('active');
+            
+            // Load detailed results
+            await loadDetailedResults(submission);
 
             const aiClass = submission.aiProbability <= 20 ? 'success' : submission.aiProbability <= 60 ? 'warning' : 'danger';
             const statusText = submission.aiProbability > 60 ? 'Needs Review' : submission.aiProbability > 40 ? 'Flagged' : 'Clear';
+
+            // Build criteria breakdown HTML
+            let criteriaHTML = '';
+            if (submission.criteria && submission.criteria.length > 0) {
+                criteriaHTML = submission.criteria.map((c, idx) => {
+                    const levelClass = c.level === 'excellent' ? 'success' : c.level === 'good' ? 'info' : c.level === 'satisfactory' ? 'warning' : 'danger';
+                    const percentage = c.maxScore > 0 ? Math.round((c.score / c.maxScore) * 100) : 0;
+                    
+                    return `
+                    <div style="background: var(--bg-light); padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--${c.level === 'excellent' ? 'success-green' : c.level === 'good' ? 'primary-blue' : c.level === 'satisfactory' ? 'warning-yellow' : 'danger-red'});">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; color: var(--text-dark);">${idx + 1}. ${c.name}</h4>
+                            <div style="text-align: right;">
+                                <span class="badge ${levelClass}">${c.level || 'N/A'}</span>
+                                <strong style="margin-left: 10px; font-size: 1.1rem;">${c.score}/${c.maxScore}</strong>
+                                <span style="color: var(--text-light);"> (${percentage}%)</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: var(--text-dark);">📝 Feedback:</strong>
+                            <p style="margin: 5px 0 0 0; color: var(--text-dark);">${c.feedback || 'No feedback provided'}</p>
+                        </div>
+                        
+                        ${c.evidence ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: var(--text-dark);">📌 Evidence from Submission:</strong>
+                            <p style="margin: 5px 0 0 0; color: var(--text-light); font-style: italic; background: white; padding: 10px; border-radius: 4px; border-left: 3px solid var(--border-color);">"${c.evidence}"</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${c.whatWasDone ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: var(--text-dark);">✓ What Was Done:</strong>
+                            <p style="margin: 5px 0 0 0; color: var(--text-dark);">${c.whatWasDone}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${c.whatWasExpected ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: var(--text-dark);">🎯 What Was Expected:</strong>
+                            <p style="margin: 5px 0 0 0; color: var(--text-dark);">${c.whatWasExpected}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${c.howToImprove && c.score < c.maxScore ? `
+                        <div style="background: #fef3c7; padding: 10px; border-radius: 4px;">
+                            <strong style="color: #92400e;">💡 How to Improve:</strong>
+                            <p style="margin: 5px 0 0 0; color: #92400e;">${c.howToImprove}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    `;
+                }).join('');
+            }
+
+            // Build improvements HTML with priority
+            let improvementsHTML = '';
+            if (submission.improvements && submission.improvements.length > 0) {
+                improvementsHTML = submission.improvements.map(imp => {
+                    if (typeof imp === 'object') {
+                        const priorityColor = imp.priority === 'high' ? 'danger-red' : imp.priority === 'medium' ? 'warning-yellow' : 'success-green';
+                        return `
+                        <div style="background: var(--bg-light); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: var(--text-dark);">${imp.area}</strong>
+                                <span class="badge ${imp.priority === 'high' ? 'danger' : imp.priority === 'medium' ? 'warning' : 'success'}">${imp.priority || 'medium'} priority</span>
+                            </div>
+                            ${imp.currentState ? `<p style="margin: 8px 0; color: var(--text-light);"><strong>Current:</strong> ${imp.currentState}</p>` : ''}
+                            <p style="margin: 5px 0 0 0; color: var(--text-dark);"><strong>Suggestion:</strong> ${imp.suggestion}</p>
+                        </div>
+                        `;
+                    } else {
+                        return `<li style="margin: 8px 0;">${imp}</li>`;
+                    }
+                }).join('');
+                
+                if (typeof submission.improvements[0] === 'string') {
+                    improvementsHTML = `<ul style="padding-left: 20px; color: var(--text-dark);">${improvementsHTML}</ul>`;
+                }
+            }
+
+            // Build code quality HTML
+            let codeQualityHTML = '';
+            if (submission.codeQuality) {
+                const cq = submission.codeQuality;
+                codeQualityHTML = `
+                <div class="detail-section">
+                    <h3>🔍 Code Quality Analysis</h3>
+                    ${cq.positives && cq.positives.length > 0 ? `
+                    <div style="background: #d1fae5; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                        <strong style="color: #065f46;">✅ Positives:</strong>
+                        <ul style="margin: 10px 0 0 20px; color: #065f46;">
+                            ${cq.positives.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    ${cq.issues && cq.issues.length > 0 ? `
+                    <div style="background: #fee2e2; padding: 15px; border-radius: 8px;">
+                        <strong style="color: #991b1b;">⚠️ Issues Found:</strong>
+                        ${cq.issues.map(issue => `
+                        <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 4px;">
+                            <strong>${issue.description}</strong>
+                            ${issue.location ? `<br><span style="color: var(--text-light);">Location: ${issue.location}</span>` : ''}
+                            ${issue.suggestion ? `<br><span style="color: #065f46;">Fix: ${issue.suggestion}</span>` : ''}
+                        </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }
 
             modalBody.innerHTML = `
                 <div class="detail-section">
@@ -1268,7 +1424,7 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">AI Penalty</div>
-                            <div class="detail-value" style="color: var(--danger-red);">${submission.aiPenalty}</div>
+                            <div class="detail-value" style="color: var(--danger-red);">${submission.aiPenalty || 0}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">AI Usage</div>
@@ -1289,48 +1445,108 @@
                             <div class="detail-value">${submission.rollNumber}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">Batch</div>
-                            <div class="detail-value">${submission.batch}</div>
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">${submission.email || 'N/A'}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">Year</div>
-                            <div class="detail-value">${submission.year}</div>
+                            <div class="detail-label">Submitted</div>
+                            <div class="detail-value">${new Date(submission.timestamp).toLocaleString()}</div>
                         </div>
                     </div>
                 </div>
 
+                ${criteriaHTML ? `
+                <div class="detail-section">
+                    <h3>📋 Detailed Criterion Breakdown</h3>
+                    ${criteriaHTML}
+                </div>
+                ` : ''}
+
                 <div class="detail-section">
                     <h3>✅ Strengths</h3>
+                    ${submission.strengths && submission.strengths.length > 0 ? `
                     <ul style="padding-left: 20px; color: var(--text-dark);">
-                        ${submission.strengths.map(s => `<li style="margin: 8px 0;">${s}</li>`).join('')}
+                        ${submission.strengths.map(s => `<li style="margin: 8px 0;">${typeof s === 'string' ? s : s.description || JSON.stringify(s)}</li>`).join('')}
                     </ul>
+                    ` : '<p style="color: var(--text-light);">No specific strengths identified in this submission.</p>'}
                 </div>
 
                 <div class="detail-section">
                     <h3>📈 Areas for Improvement</h3>
-                    <ul style="padding-left: 20px; color: var(--text-dark);">
-                        ${submission.improvements.map(i => `<li style="margin: 8px 0;">${i}</li>`).join('')}
-                    </ul>
+                    ${improvementsHTML || '<p style="color: var(--text-light);">No specific improvements suggested.</p>'}
                 </div>
+
+                ${submission.missingElements && submission.missingElements.length > 0 ? `
+                <div class="detail-section">
+                    <h3>❌ Missing Elements</h3>
+                    <div style="background: #fee2e2; padding: 15px; border-radius: 8px;">
+                        <ul style="margin: 0; padding-left: 20px; color: #991b1b;">
+                            ${submission.missingElements.map(m => `<li>${m}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${submission.bonusElements && submission.bonusElements.length > 0 ? `
+                <div class="detail-section">
+                    <h3>🌟 Bonus Elements</h3>
+                    <div style="background: #d1fae5; padding: 15px; border-radius: 8px;">
+                        <ul style="margin: 0; padding-left: 20px; color: #065f46;">
+                            ${submission.bonusElements.map(b => `<li>${b}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${codeQualityHTML}
 
                 <div class="detail-section">
                     <h3>💬 Overall Feedback</h3>
-                    <p style="color: var(--text-dark); line-height: 1.6;">${submission.feedback}</p>
+                    <p style="color: var(--text-dark); line-height: 1.8; background: var(--bg-light); padding: 20px; border-radius: 8px; font-size: 1rem;">${submission.overallFeedback || submission.feedback || 'No overall feedback available.'}</p>
+                </div>
+
+                ${submission.learningEvidence && submission.learningEvidence.length > 0 ? `
+                <div class="detail-section">
+                    <h3>🎓 Evidence of Learning</h3>
+                    <ul style="padding-left: 20px; color: var(--text-dark);">
+                        ${submission.learningEvidence.map(e => `<li style="margin: 8px 0;">✓ ${e}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+
+                <div class="detail-section">
+                    <h3>📝 Submission Content</h3>
+                    <div class="code-viewer" style="max-height: 400px; overflow-y: auto;">
+                        ${submission.submissionText ? 
+                            submission.submissionText.split('\\n').map((line, i) => 
+                                `<span class="code-line">${(i + 1).toString().padStart(3, ' ')}. ${escapeHtml(line) || ' '}</span>`
+                            ).join('') 
+                            : '<span class="code-line">Submission content not available. The detailed results file may not exist yet.</span>'
+                        }
+                    </div>
                 </div>
 
                 <div class="detail-section">
-                    <h3>📝 Submission Code</h3>
-                    <div class="code-viewer">
-                        ${submission.submissionText.split('\n').map((line, i) => 
-                            `<span class="code-line">${i + 1}. ${line || ' '}</span>`
-                        ).join('')}
+                    <div style="background: #e0e7ff; border-left: 4px solid var(--primary-blue); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--primary-dark); margin-bottom: 15px;">📝 Instructor Comments</h4>
+                        <p style="margin-bottom: 10px; color: var(--text-light); font-size: 0.9rem;">
+                            Add your personal feedback or notes for this student. These comments will be saved.
+                        </p>
+                        <textarea id="instructorComments" 
+                                  style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical;"
+                                  placeholder="Enter your comments here... (e.g., areas to focus on, encouragement, specific advice)">${submission.instructorComments || ''}</textarea>
+                        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="saveInstructorComments('${submission.rollNumber}', ${submission.practicalNumber})">
+                                💾 Save Comments
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 ${submission.aiProbability > 40 ? `
                     <div class="detail-section">
                         <div class="override-section">
-                            <h4>⚠️ Manual Override</h4>
+                            <h4>⚠️ Manual Score Override</h4>
                             <p style="margin-bottom: 15px; color: var(--text-light); font-size: 0.9rem;">
                                 Adjust the score if you believe the AI detection or grading was incorrect.
                             </p>
@@ -1340,7 +1556,7 @@
                                     <input type="number" min="0" max="100" value="${submission.finalScore}" id="overrideScore">
                                 </div>
                                 <div style="flex: 2;">
-                                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600;">Reason</label>
+                                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600;">Reason for Override</label>
                                     <textarea id="overrideReason" placeholder="Explain why you're overriding the score..."></textarea>
                                 </div>
                                 <button class="btn btn-warning" onclick="saveOverride('${submission.rollNumber}', ${submission.practicalNumber})">
@@ -1351,8 +1567,31 @@
                     </div>
                 ` : ''}
             `;
-
-            modal.classList.add('active');
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Save instructor comments
+        function saveInstructorComments(rollNumber, practicalNumber) {
+            const comments = document.getElementById('instructorComments').value;
+            
+            // Update in memory
+            const submission = allSubmissions.find(s => s.rollNumber === rollNumber && s.practicalNumber === practicalNumber);
+            if (submission) {
+                submission.instructorComments = comments;
+            }
+            
+            // Save to localStorage for persistence
+            const key = `instructor_comments_${rollNumber}_${practicalNumber}`;
+            localStorage.setItem(key, comments);
+            
+            alert('Comments saved successfully!');
         }
 
         function closeModal() {

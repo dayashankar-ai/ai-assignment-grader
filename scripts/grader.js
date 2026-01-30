@@ -64,31 +64,95 @@ function calculateGradeLetter(score) {
 }
 
 async function gradeAssignment(submissionText, rubric, aiResult, practicalNumber) {
-  // Build enhanced grading prompt with detailed criteria analysis
-  let prompt = 'Grade this assignment using the rubric. Analyze each criterion carefully. Return ONLY valid JSON.\n\n';
-  prompt += 'RUBRIC: ' + rubric.title + ' (' + rubric.totalPoints + ' points)\n\n';
-  prompt += 'CRITERIA TO EVALUATE:\n';
+  // Build comprehensive grading prompt for detailed, actionable feedback
+  let prompt = `You are an expert programming instructor grading a student assignment. Provide DETAILED, SPECIFIC feedback that helps students understand exactly what they did well, what needs improvement, and how to improve.
+
+## ASSIGNMENT DETAILS
+- Title: ${rubric.title}
+- Total Points: ${rubric.totalPoints}
+- Learning Objectives: ${rubric.learningObjectives ? rubric.learningObjectives.join(', ') : 'Not specified'}
+
+## GRADING RUBRIC WITH LEVEL DESCRIPTORS
+`;
+
+  // Include detailed rubric with level descriptors
   rubric.criteria.forEach((c, idx) => {
-    prompt += (idx + 1) + '. ' + c.name + ' (' + c.points + ' points max)\n';
-    prompt += '   Description: ' + c.description + '\n';
-    prompt += '   Evaluate: Does the submission meet this criterion? Provide specific evidence.\n\n';
+    prompt += `\n### Criterion ${idx + 1}: ${c.name} (Weight: ${c.weight}%, Max: ${c.points || Math.round(c.weight)} points)\n`;
+    prompt += `Description: ${c.description}\n`;
+    if (c.levels) {
+      prompt += 'Performance Levels:\n';
+      Object.entries(c.levels).forEach(([level, info]) => {
+        prompt += `  - ${level.toUpperCase()} (${info.scoreRange}): ${info.description}\n`;
+      });
+    }
   });
-  
-  prompt += '\nSUBMISSION TO GRADE:\n' + submissionText;
-  
-  prompt += '\n\nGRADING INSTRUCTIONS:\n';
-  prompt += '1. For EACH criterion, provide:\n';
-  prompt += '   - name (exact match from rubric)\n';
-  prompt += '   - score (0 to maxScore)\n';
-  prompt += '   - maxScore (from rubric)\n';
-  prompt += '   - feedback (specific observations with evidence)\n';
-  prompt += '   - evidence (quote or describe specific parts that justify the score)\n';
-  prompt += '2. Calculate totalScore (sum of all criterion scores)\n';
-  prompt += '3. Provide overallFeedback (holistic assessment)\n';
-  prompt += '4. List strengths (what was done well)\n';
-  prompt += '5. List improvements (specific actionable suggestions)\n';
-  prompt += '6. Identify learningEvidence (signs of genuine understanding vs AI generation)\n\n';
-  prompt += 'Return JSON with: totalScore, criteria (array), overallFeedback, strengths (array), improvements (array), learningEvidence (array)';
+
+  prompt += `\n## STUDENT SUBMISSION TO GRADE
+=== START OF SUBMISSION ===
+${submissionText}
+=== END OF SUBMISSION ===
+
+## GRADING INSTRUCTIONS
+
+Analyze the submission thoroughly and provide DETAILED feedback. Your response must be valid JSON with the following structure:
+
+{
+  "totalScore": <number 0-100>,
+  "criteria": [
+    {
+      "name": "<exact criterion name from rubric>",
+      "score": <points earned>,
+      "maxScore": <max points for this criterion>,
+      "percentage": <score as percentage>,
+      "level": "<excellent|good|satisfactory|poor>",
+      "feedback": "<2-3 sentences of specific feedback>",
+      "evidence": "<quote or describe specific parts of submission that justify score>",
+      "whatWasDone": "<describe what student actually did for this criterion>",
+      "whatWasExpected": "<describe what was expected for full marks>",
+      "howToImprove": "<specific, actionable suggestions if score < max>"
+    }
+  ],
+  "overallFeedback": "<comprehensive 3-5 sentence assessment covering the whole submission>",
+  "strengths": [
+    "<specific strength with example from submission>",
+    "<another specific strength>"
+  ],
+  "improvements": [
+    {
+      "area": "<area needing improvement>",
+      "currentState": "<what the submission currently has/lacks>",
+      "suggestion": "<specific actionable suggestion>",
+      "priority": "<high|medium|low>"
+    }
+  ],
+  "learningEvidence": [
+    "<sign of genuine understanding or learning>"
+  ],
+  "codeQuality": {
+    "positives": ["<specific positive aspect>"],
+    "issues": [
+      {
+        "description": "<issue description>",
+        "location": "<where in submission>",
+        "suggestion": "<how to fix>"
+      }
+    ]
+  },
+  "missingElements": ["<list anything required but missing>"],
+  "bonusElements": ["<list anything that goes beyond requirements>"]
+}
+
+## CRITICAL REQUIREMENTS
+1. Be SPECIFIC - reference actual code/content from the submission
+2. Quote evidence when possible (e.g., "The function 'calculate_average()' shows...")
+3. Explain WHY marks were deducted for each criterion
+4. Provide ACTIONABLE improvement suggestions
+5. Use encouraging but honest language
+6. Match scores to rubric level descriptors (excellent/good/satisfactory/poor)
+7. Ensure totalScore equals the sum of all criteria scores
+8. DO NOT be vague or generic - every piece of feedback should reference the actual submission
+
+Return ONLY the JSON response, no additional text.`;
 
   let result;
   let attempts = 0;
@@ -98,7 +162,7 @@ async function gradeAssignment(submissionText, rubric, aiResult, practicalNumber
     try {
       const message = await anthropic.messages.create({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2048,
+        max_tokens: 4096,
         temperature: 0,
         messages: [{ role: 'user', content: prompt }]
       });
