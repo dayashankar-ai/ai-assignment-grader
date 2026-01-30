@@ -510,60 +510,38 @@ jobs:
           
           echo "CSV saved. Now saving detailed JSON..."
           
-          # Create detailed JSON using simple approach
+          # Create detailed JSON by copying grade-result.json and adding extra fields
           DETAIL_FILE="results/details/${ROLL_NUMBER}_practical_${PRACTICAL_NUMBER}.json"
           echo "Creating detailed JSON at: $DETAIL_FILE"
           
-          # Copy grade-result.json and add extra fields
           if [ -f "grade-result.json" ]; then
-            # Read the grade result and add student info
-            node << 'ENDSCRIPT'
-const fs = require('fs');
-
-// Read inputs
-const gradeResult = JSON.parse(fs.readFileSync('grade-result.json', 'utf-8'));
-const studentName = process.env.STUDENT_NAME || 'Unknown';
-const rollNumber = process.env.ROLL_NUMBER || 'Unknown';
-const studentEmail = process.env.STUDENT_EMAIL || 'unknown@example.com';
-const batch = process.env.BATCH || 'Unknown';
-const practicalNumber = process.env.PRACTICAL_NUMBER || '1';
-const aiPercent = process.env.AI_PERCENT || '0';
-const submissionFile = process.env.SUBMISSION_FILE || '';
-
-// Read submission content
-let submissionText = '';
-try {
-  if (submissionFile && fs.existsSync(submissionFile)) {
-    submissionText = fs.readFileSync(submissionFile, 'utf-8');
-  }
-} catch (e) {
-  console.log('Could not read submission file:', e.message);
-}
-
-// Create detailed result
-const detailedResult = {
-  ...gradeResult,
-  studentName,
-  rollNumber,
-  email: studentEmail,
-  batch,
-  practicalNumber,
-  timestamp: new Date().toISOString(),
-  aiUsagePercent: parseInt(aiPercent) || 0,
-  submissionText,
-  instructorComments: ''
-};
-
-// Ensure directory exists
-if (!fs.existsSync('results/details')) {
-  fs.mkdirSync('results/details', { recursive: true });
-}
-
-// Save file
-const detailFile = `results/details/${rollNumber}_practical_${practicalNumber}.json`;
-fs.writeFileSync(detailFile, JSON.stringify(detailedResult, null, 2));
-console.log('Created:', detailFile);
-ENDSCRIPT
+            # Read submission content with proper escaping for JSON
+            SUB_CONTENT=""
+            if [ -f "${SUBMISSION_FILE}" ]; then
+              # Escape special characters for JSON
+              SUB_CONTENT=$(cat "${SUBMISSION_FILE}" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g' | head -c 5000)
+            fi
+            
+            # Copy grade result and add student info using Node.js (simpler approach)
+            cp grade-result.json "$DETAIL_FILE.tmp"
+            
+            node -e "
+              const fs = require('fs');
+              const data = JSON.parse(fs.readFileSync('$DETAIL_FILE.tmp', 'utf-8'));
+              data.studentName = '${STUDENT_NAME}';
+              data.rollNumber = '${ROLL_NUMBER}';
+              data.email = '${STUDENT_EMAIL}';
+              data.batch = '${BATCH}';
+              data.practicalNumber = '${PRACTICAL_NUMBER}';
+              data.timestamp = new Date().toISOString();
+              data.aiUsagePercent = parseInt('${AI_PERCENT}') || 0;
+              data.submissionText = '';
+              data.instructorComments = '';
+              fs.writeFileSync('$DETAIL_FILE', JSON.stringify(data, null, 2));
+              console.log('Created: $DETAIL_FILE');
+            " || echo "Node.js merge failed"
+            
+            rm -f "$DETAIL_FILE.tmp"
             
             echo "Checking if file was created..."
             ls -la results/details/ || echo "Could not list directory"
