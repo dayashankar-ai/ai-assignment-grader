@@ -178,56 +178,92 @@ jobs:
               const commits = context.payload.commits || [];
               console.log('Commits array:', JSON.stringify(commits, null, 2));
               
-              // Check both added and modified files
+              // Check both added and modified files from commits array
               const addedFiles = commits.flatMap(c => c.added || []);
               const modifiedFiles = commits.flatMap(c => c.modified || []);
-              const allFiles = [...addedFiles, ...modifiedFiles];
+              let allFiles = [...addedFiles, ...modifiedFiles];
               
-              console.log('Added files:', addedFiles);
-              console.log('Modified files:', modifiedFiles);
-              console.log('All files:', allFiles);
+              console.log('Added files from commits:', addedFiles);
+              console.log('Modified files from commits:', modifiedFiles);
               
-              // Also check files in submissions/ directory directly
-              const submissionsDir = 'submissions';
-              let filesInDir = [];
-              if (fs.existsSync(submissionsDir)) {
-                filesInDir = fs.readdirSync(submissionsDir).filter(f => f.endsWith('.txt'));
-                console.log('Files in submissions/ directory:', filesInDir);
-              }
-              
-              let submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
-              console.log('Submission files found in commits:', submissionFiles);
-              
-              // FIXED: If no files in commits, check head_commit for the specific changed file
-              if (submissionFiles.length === 0 && context.payload.head_commit) {
-                console.log('Checking head_commit for files...');
+              // CRITICAL FIX: Also check head_commit (this is where GitHub API commits show up!)
+              if (context.payload.head_commit) {
                 const headAdded = context.payload.head_commit.added || [];
                 const headModified = context.payload.head_commit.modified || [];
-                submissionFiles = [...headAdded, ...headModified].filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
-                console.log('Files from head_commit:', submissionFiles);
+                console.log('head_commit added:', headAdded);
+                console.log('head_commit modified:', headModified);
+                allFiles = [...allFiles, ...headAdded, ...headModified];
               }
               
-              // FIXED: Use file modification time to find truly newest file, not alphabetical order
+              console.log('All files combined:', allFiles);
+              
+              let submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
+              console.log('Submission files found:', submissionFiles);
+              
+              // If still no files, try to get from compare API
               if (submissionFiles.length === 0) {
-                console.log('No submission files found in commits. Checking directory by modification time...');
-                if (filesInDir.length > 0) {
-                  // Get file stats and sort by modification time (newest first)
-                  const fileStats = filesInDir.map(f => {
-                    const fullPath = path.join(submissionsDir, f);
-                    const stats = fs.statSync(fullPath);
-                    return { name: f, mtime: stats.mtime };
-                  });
-                  fileStats.sort((a, b) => b.mtime - a.mtime); // Sort descending (newest first)
-                  
-                  const newestFile = fileStats[0].name;
-                  submissionFiles.push(`submissions/${newestFile}`);
-                  console.log('Using newest file by modification time:', newestFile);
-                } else {
-                  console.log('No submission files found in submissions/ folder');
-                  core.setOutput('is_submission', 'false');
-                  return;
+                console.log('No files in payload, trying compare API...');
+                try {
+                  const before = context.payload.before;
+                  const after = context.payload.after;
+                  if (before && after && before !== '0000000000000000000000000000000000000000') {
+                    const compare = await github.rest.repos.compareCommits({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      base: before,
+                      head: after
+                    });
+                    const compareFiles = compare.data.files || [];
+                    console.log('Files from compare API:', compareFiles.map(f => f.filename));
+                    submissionFiles = compareFiles
+                      .filter(f => f.filename.startsWith('submissions/') && f.filename.endsWith('.txt'))
+                      .map(f => f.filename);
+                    console.log('Submission files from compare:', submissionFiles);
+                  }
+                } catch (e) {
+                  console.log('Compare API failed:', e.message);
                 }
               }
+              
+              // Last resort: check commit message for filename hint
+              if (submissionFiles.length === 0 && context.payload.head_commit) {
+                const commitMsg = context.payload.head_commit.message || '';
+                console.log('Commit message:', commitMsg);
+                // Look for patterns like "Add submission: filename.txt" or "Submit filename"
+                const filenameMatch = commitMsg.match(/(?:submission|submit)[:\s]+(\S+\.txt)/i);
+                if (filenameMatch) {
+                  const possibleFile = `submissions/${filenameMatch[1]}`;
+                  if (fs.existsSync(possibleFile)) {
+                    submissionFiles.push(possibleFile);
+                    console.log('Found file from commit message:', possibleFile);
+                  }
+                }
+              }
+              
+              // Final fallback: newest file by git log
+              if (submissionFiles.length === 0) {
+                console.log('Still no files found. Checking git log for recent submissions...');
+                const { execSync } = require('child_process');
+                try {
+                  // Get the most recently committed file in submissions/
+                  const gitLog = execSync('git log -1 --name-only --pretty=format: -- submissions/*.txt', { encoding: 'utf-8' });
+                  const recentFiles = gitLog.trim().split('\n').filter(f => f.startsWith('submissions/'));
+                  console.log('Recent files from git log:', recentFiles);
+                  if (recentFiles.length > 0) {
+                    submissionFiles = recentFiles;
+                  }
+                } catch (e) {
+                  console.log('Git log failed:', e.message);
+                }
+              }
+              
+              if (submissionFiles.length === 0) {
+                console.log('No submission files found by any method');
+                core.setOutput('is_submission', 'false');
+                return;
+              }
+              
+              console.log('FINAL: Processing file:', submissionFiles[0]);
               
               // Use first submission file
               const filePath = submissionFiles[0];
