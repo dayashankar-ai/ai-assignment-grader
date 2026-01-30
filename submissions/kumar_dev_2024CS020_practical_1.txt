@@ -1,0 +1,60 @@
+STUDENT_NAME: Kumar Dev
+STUDENT_ID: 2024CS020
+EMAIL: kumar.dev@university.edu
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Basic Prompt Engineering
+
+## Introduction
+In this practical, I explored the fundamentals of prompt engineering. This is a relatively new field that focuses on designing effective prompts for Large Language Models.
+
+## Task 1: Simple Prompts
+
+### Basic Prompt Example
+```python
+prompt = "What is machine learning?"
+```
+
+This is a simple prompt but lacks specificity.
+
+### Improved Prompt
+```python
+improved_prompt = "Explain machine learning in 2-3 sentences suitable for a high school student"
+```
+
+Better because it specifies: audience, length, and complexity level.
+
+## Task 2: Prompt with Context
+
+```python
+context_prompt = """
+You are a helpful Python tutor.
+The student is a beginner.
+Explain how to create a list in Python with 3 examples.
+"""
+```
+
+This shows role-setting which is useful.
+
+## Task 3: Few-shot Example
+```python
+few_shot = """
+Example task: Translate English to French
+Input: "Hello" -> Output: "Bonjour"
+Input: "Goodbye" -> Output: "Au revoir"
+Input: "Thank you" -> Output: ?
+"""
+```
+
+## Observations
+1. Specific prompts give better results
+2. Adding context helps
+3. Examples guide the model
+
+## Conclusion
+Prompt engineering is important for working with LLMs effectively. I learned the basics but need more practice with complex scenarios.
+
+## References
+- Course lecture notes
+- OpenAI documentation
