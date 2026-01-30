@@ -1,0 +1,15 @@
+STUDENT_NAME: Debug Test
+STUDENT_ID: 2024DEBUG001
+EMAIL: debug.test@university.edu
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1 Test
+
+Simple prompt test.
+
+```python
+prompt = "Hello world"
+```
+
+Done.
