@@ -88,7 +88,7 @@ function main() {
   }
   if (!fs.existsSync(detailsDir)) {
     console.log('Creating results/details directory...');
-    fs.mkdirSync(detailsDir);
+    fs.mkdirSync(detailsDir, { recursive: true });
   }
   
   // Save to file
@@ -112,8 +112,14 @@ function main() {
     }
   } catch (error) {
     console.error('Error saving detailed results:', error.message);
-    process.exit(1);
+    console.log('⚠️ Detailed JSON save failed but continuing...');
+    // Don't exit with error - allow workflow to continue
   }
 }
 
-main();
+try {
+  main();
+} catch (error) {
+  console.error('Unexpected error in save-detailed-results.js:', error.message);
+  // Don't exit with error - allow workflow to continue
+}

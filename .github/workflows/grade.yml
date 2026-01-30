@@ -510,74 +510,23 @@ jobs:
           
           echo "CSV saved. Now saving detailed JSON..."
           
-          # Debug: Show current state before running script
+          # Debug: Show current state
           echo "Current directory: $(pwd)"
-          echo "Files in current directory:"
-          ls -la *.json 2>/dev/null || echo "No JSON files in current dir"
-          echo "grade-result.json contents (first 200 chars):"
-          head -c 200 grade-result.json 2>/dev/null || echo "grade-result.json not found"
+          echo "grade-result.json exists: $(test -f grade-result.json && echo 'yes' || echo 'no')"
           
-          # Create detailed JSON inline (simpler and more reliable than external script)
-          echo "Creating detailed JSON inline..."
-          DETAIL_FILE="results/details/${ROLL_NUMBER}_practical_${PRACTICAL_NUMBER}.json"
-          echo "Target file: $DETAIL_FILE"
-          
-          node -e "
-            const fs = require('fs');
-            const path = require('path');
-            
-            try {
-              // Read grade result
-              const gradeResult = JSON.parse(fs.readFileSync('grade-result.json', 'utf-8'));
-              console.log('Loaded grade result, keys:', Object.keys(gradeResult).join(', '));
-              
-              // Read submission file if exists
-              let submissionText = '';
-              const subFile = process.env.SUBMISSION_FILE;
-              if (subFile && fs.existsSync(subFile)) {
-                submissionText = fs.readFileSync(subFile, 'utf-8');
-                console.log('Loaded submission, length:', submissionText.length);
-              }
-              
-              // Create detailed result
-              const detailedResult = {
-                ...gradeResult,
-                studentName: process.env.STUDENT_NAME || 'Unknown',
-                rollNumber: process.env.ROLL_NUMBER || 'Unknown',
-                email: process.env.STUDENT_EMAIL || 'unknown@example.com',
-                batch: process.env.BATCH || 'Unknown',
-                practicalNumber: process.env.PRACTICAL_NUMBER || '1',
-                timestamp: new Date().toISOString(),
-                aiUsagePercent: parseInt(process.env.AI_PERCENT) || 0,
-                submissionText: submissionText,
-                instructorComments: ''
-              };
-              
-              // Ensure directory exists
-              if (!fs.existsSync('results/details')) {
-                fs.mkdirSync('results/details', { recursive: true });
-              }
-              
-              // Save file
-              const detailFile = 'results/details/' + (process.env.ROLL_NUMBER || 'Unknown') + '_practical_' + (process.env.PRACTICAL_NUMBER || '1') + '.json';
-              fs.writeFileSync(detailFile, JSON.stringify(detailedResult, null, 2));
-              console.log('✅ Saved detailed JSON to:', detailFile);
-              
-              // Verify
-              if (fs.existsSync(detailFile)) {
-                console.log('✅ File verified, size:', fs.statSync(detailFile).size, 'bytes');
-              }
-            } catch (error) {
-              console.error('Error:', error.message);
-              process.exit(1);
-            }
-          "
-          
-          echo "✅ Results saved successfully"
+          # Use external script for detailed JSON (avoids shell escaping issues)
+          echo "Running save-detailed-results.js..."
+          if node scripts/save-detailed-results.js; then
+            echo "✅ Detailed JSON script completed successfully"
+          else
+            echo "⚠️ Detailed JSON script failed, continuing anyway..."
+          fi
           
           # Debug: Check what was created
           echo "Contents of results/details/:"
-          ls -la results/details/ || echo "Directory listing failed"
+          ls -la results/details/ 2>/dev/null || echo "Directory listing failed"
+          
+          echo "✅ Results saved successfully"
           
       - name: Commit results with retry
         if: steps.extract.outputs.is_submission == 'true'
