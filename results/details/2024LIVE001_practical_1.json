@@ -1,0 +1,19 @@
+{
+  "totalScore": 0,
+  "baseScore": 0,
+  "finalScore": 0,
+  "gradeLetter": "F",
+  "overallFeedback": "Grading result file not found",
+  "criteria": [],
+  "strengths": [],
+  "improvements": [],
+  "studentName": "Live Test Student",
+  "rollNumber": "2024LIVE001",
+  "email": "live.test@university.edu",
+  "batch": "2024",
+  "practicalNumber": "1",
+  "timestamp": "2026-01-30T16:14:21.644Z",
+  "aiUsagePercent": 0,
+  "submissionText": "// STUDENT NAME: Live Test Student\n// ROLL NUMBER: 2024LIVE001\n// EMAIL: live.test@university.edu\n// BATCH: 2024\n// YEAR: III\n// PRACTICAL NUMBER: 1\n\n/**\n * Live End-to-End Test Submission\n * Testing the complete automated grading flow\n */\n\nclass SimpleCalculator {\n    constructor() {\n        this.memory = 0;\n        this.history = [];\n    }\n    \n    // Basic arithmetic operations\n    add(a, b) {\n        const result = parseFloat(a) + parseFloat(b);\n        this.history.push(`${a} + ${b} = ${result}`);\n        return result;\n    }\n    \n    subtract(a, b) {\n        const result = parseFloat(a) - parseFloat(b);\n        this.history.push(`${a} - ${b} = ${result}`);\n        return result;\n    }\n    \n    multiply(a, b) {\n        const result = parseFloat(a) * parseFloat(b);\n        this.history.push(`${a} × ${b} = ${result}`);\n        return result;\n    }\n    \n    divide(a, b) {\n        if (parseFloat(b) === 0) {\n            throw new Error(\"Cannot divide by zero\");\n        }\n        const result = parseFloat(a) / parseFloat(b);\n        this.history.push(`${a} ÷ ${b} = ${result}`);\n        return result;\n    }\n    \n    // Advanced operations\n    power(base, exponent) {\n        const result = Math.pow(parseFloat(base), parseFloat(exponent));\n        this.history.push(`${base}^${exponent} = ${result}`);\n        return result;\n    }\n    \n    squareRoot(number) {\n        if (parseFloat(number) < 0) {\n            throw new Error(\"Cannot calculate square root of negative number\");\n        }\n        const result = Math.sqrt(parseFloat(number));\n        this.history.push(`√${number} = ${result}`);\n        return result;\n    }\n    \n    // Memory operations\n    memoryStore(value) {\n        this.memory = parseFloat(value);\n        return `Stored ${value} in memory`;\n    }\n    \n    memoryRecall() {\n        return this.memory;\n    }\n    \n    memoryClear() {\n        this.memory = 0;\n        return \"Memory cleared\";\n    }\n    \n    // History operations\n    getHistory() {\n        return this.history.join('\\n');\n    }\n    \n    clearHistory() {\n        this.history = [];\n        return \"History cleared\";\n    }\n}\n\n// Test cases\nconst calc = new SimpleCalculator();\n\nconsole.log(\"Basic Operations:\");\nconsole.log(calc.add(10, 5));        // 15\nconsole.log(calc.subtract(10, 3));   // 7\nconsole.log(calc.multiply(4, 5));    // 20\nconsole.log(calc.divide(20, 4));     // 5\n\nconsole.log(\"\\nAdvanced Operations:\");\nconsole.log(calc.power(2, 3));       // 8\nconsole.log(calc.squareRoot(16));    // 4\n\nconsole.log(\"\\nMemory Operations:\");\nconsole.log(calc.memoryStore(42));\nconsole.log(calc.memoryRecall());\nconsole.log(calc.memoryClear());\n\nconsole.log(\"\\nHistory:\");\nconsole.log(calc.getHistory());\n\nmodule.exports = SimpleCalculator;\n",
+  "instructorComments": ""
+}
