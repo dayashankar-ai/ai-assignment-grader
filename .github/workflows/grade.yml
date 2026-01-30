@@ -485,33 +485,30 @@ jobs:
           # Append to CSV (matching existing format)
           echo "$TIMESTAMP,${{ env.STUDENT_NAME }},${{ env.ROLL_NUMBER }},${{ env.STUDENT_EMAIL }},${{ env.PRACTICAL_NUMBER }},${{ env.FINAL_SCORE }},100,$GRADE_LETTER,$AI_DETECTED,${{ env.AI_PERCENT }}%,\"$FEEDBACK\"" >> results/grades.csv
           
-          # Save detailed JSON with all feedback
-          # Add student info and submission content to the grade result
+          # Save detailed JSON with all feedback using Node.js (more reliable than jq)
           DETAIL_FILE="results/details/${{ env.ROLL_NUMBER }}_practical_${{ env.PRACTICAL_NUMBER }}.json"
           
-          # Read submission content
-          SUBMISSION_CONTENT=$(cat "${{ env.SUBMISSION_FILE }}" | jq -Rs .)
-          
-          # Read grade result and add extra fields
-          jq --arg name "${{ env.STUDENT_NAME }}" \
-             --arg roll "${{ env.ROLL_NUMBER }}" \
-             --arg email "${{ env.STUDENT_EMAIL }}" \
-             --arg batch "${{ env.BATCH }}" \
-             --arg practical "${{ env.PRACTICAL_NUMBER }}" \
-             --arg timestamp "$TIMESTAMP" \
-             --arg aiPercent "${{ env.AI_PERCENT }}" \
-             --argjson submission "$SUBMISSION_CONTENT" \
-             '. + {
-               studentName: $name,
-               rollNumber: $roll,
-               email: $email,
-               batch: $batch,
-               practicalNumber: $practical,
-               timestamp: $timestamp,
-               aiUsagePercent: ($aiPercent | tonumber),
-               submissionText: $submission,
-               instructorComments: ""
-             }' grade-result.json > "$DETAIL_FILE"
+          node -e "
+            const fs = require('fs');
+            const gradeResult = JSON.parse(fs.readFileSync('grade-result.json', 'utf-8'));
+            const submissionContent = fs.readFileSync('${{ env.SUBMISSION_FILE }}', 'utf-8');
+            
+            const detailedResult = {
+              ...gradeResult,
+              studentName: '${{ env.STUDENT_NAME }}',
+              rollNumber: '${{ env.ROLL_NUMBER }}',
+              email: '${{ env.STUDENT_EMAIL }}',
+              batch: '${{ env.BATCH }}',
+              practicalNumber: '${{ env.PRACTICAL_NUMBER }}',
+              timestamp: '$TIMESTAMP',
+              aiUsagePercent: parseInt('${{ env.AI_PERCENT }}') || 0,
+              submissionText: submissionContent,
+              instructorComments: ''
+            };
+            
+            fs.writeFileSync('$DETAIL_FILE', JSON.stringify(detailedResult, null, 2));
+            console.log('Detailed JSON saved successfully');
+          "
           
           echo "✅ Detailed results saved to $DETAIL_FILE"
           echo "✅ Summary results saved to CSV"
