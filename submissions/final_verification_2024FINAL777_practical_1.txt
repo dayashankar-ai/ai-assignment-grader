@@ -1,0 +1,76 @@
+// STUDENT NAME: Final Verification
+// ROLL NUMBER: 2024FINAL777
+// EMAIL: final.verify@test.edu
+// BATCH: 2024
+// YEAR: III
+// PRACTICAL NUMBER: 1
+
+/**
+ * Calculator Class Implementation
+ * Practical Assignment 1
+ */
+
+class Calculator {
+    constructor() {
+        this.memory = 0;
+        this.history = [];
+    }
+    
+    add(a, b) {
+        const result = Number(a) + Number(b);
+        this.history.push(`${a} + ${b} = ${result}`);
+        return result;
+    }
+    
+    subtract(a, b) {
+        const result = Number(a) - Number(b);
+        this.history.push(`${a} - ${b} = ${result}`);
+        return result;
+    }
+    
+    multiply(a, b) {
+        const result = Number(a) * Number(b);
+        this.history.push(`${a} × ${b} = ${result}`);
+        return result;
+    }
+    
+    divide(a, b) {
+        if (Number(b) === 0) {
+            throw new Error("Cannot divide by zero");
+        }
+        const result = Number(a) / Number(b);
+        this.history.push(`${a} ÷ ${b} = ${result}`);
+        return result;
+    }
+    
+    power(base, exponent) {
+        const result = Math.pow(Number(base), Number(exponent));
+        return result;
+    }
+    
+    squareRoot(n) {
+        if (Number(n) < 0) {
+            throw new Error("Cannot calculate square root of negative number");
+        }
+        return Math.sqrt(Number(n));
+    }
+    
+    getHistory() {
+        return this.history;
+    }
+    
+    clearHistory() {
+        this.history = [];
+    }
+}
+
+// Test the calculator
+const calc = new Calculator();
+console.log(calc.add(10, 5));      // 15
+console.log(calc.subtract(10, 3)); // 7
+console.log(calc.multiply(4, 5));  // 20
+console.log(calc.divide(20, 4));   // 5
+console.log(calc.power(2, 3));     // 8
+console.log(calc.squareRoot(16));  // 4
+
+module.exports = Calculator;
