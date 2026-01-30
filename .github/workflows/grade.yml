@@ -510,21 +510,66 @@ jobs:
           
           echo "CSV saved. Now saving detailed JSON..."
           
-          # Debug: Show current state
-          echo "Current directory: $(pwd)"
-          echo "grade-result.json exists: $(test -f grade-result.json && echo 'yes' || echo 'no')"
+          # Create detailed JSON using simple approach
+          DETAIL_FILE="results/details/${ROLL_NUMBER}_practical_${PRACTICAL_NUMBER}.json"
+          echo "Creating detailed JSON at: $DETAIL_FILE"
           
-          # Use external script for detailed JSON (avoids shell escaping issues)
-          echo "Running save-detailed-results.js..."
-          if node scripts/save-detailed-results.js; then
-            echo "✅ Detailed JSON script completed successfully"
+          # Copy grade-result.json and add extra fields
+          if [ -f "grade-result.json" ]; then
+            # Read the grade result and add student info
+            node << 'ENDSCRIPT'
+const fs = require('fs');
+
+// Read inputs
+const gradeResult = JSON.parse(fs.readFileSync('grade-result.json', 'utf-8'));
+const studentName = process.env.STUDENT_NAME || 'Unknown';
+const rollNumber = process.env.ROLL_NUMBER || 'Unknown';
+const studentEmail = process.env.STUDENT_EMAIL || 'unknown@example.com';
+const batch = process.env.BATCH || 'Unknown';
+const practicalNumber = process.env.PRACTICAL_NUMBER || '1';
+const aiPercent = process.env.AI_PERCENT || '0';
+const submissionFile = process.env.SUBMISSION_FILE || '';
+
+// Read submission content
+let submissionText = '';
+try {
+  if (submissionFile && fs.existsSync(submissionFile)) {
+    submissionText = fs.readFileSync(submissionFile, 'utf-8');
+  }
+} catch (e) {
+  console.log('Could not read submission file:', e.message);
+}
+
+// Create detailed result
+const detailedResult = {
+  ...gradeResult,
+  studentName,
+  rollNumber,
+  email: studentEmail,
+  batch,
+  practicalNumber,
+  timestamp: new Date().toISOString(),
+  aiUsagePercent: parseInt(aiPercent) || 0,
+  submissionText,
+  instructorComments: ''
+};
+
+// Ensure directory exists
+if (!fs.existsSync('results/details')) {
+  fs.mkdirSync('results/details', { recursive: true });
+}
+
+// Save file
+const detailFile = `results/details/${rollNumber}_practical_${practicalNumber}.json`;
+fs.writeFileSync(detailFile, JSON.stringify(detailedResult, null, 2));
+console.log('Created:', detailFile);
+ENDSCRIPT
+            
+            echo "Checking if file was created..."
+            ls -la results/details/ || echo "Could not list directory"
           else
-            echo "⚠️ Detailed JSON script failed, continuing anyway..."
+            echo "grade-result.json not found, skipping detailed JSON"
           fi
-          
-          # Debug: Check what was created
-          echo "Contents of results/details/:"
-          ls -la results/details/ 2>/dev/null || echo "Directory listing failed"
           
           echo "✅ Results saved successfully"
           
