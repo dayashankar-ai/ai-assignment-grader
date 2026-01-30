@@ -740,11 +740,58 @@
                 <p>AI Assignment Auto-Grader - Manage and analyze student submissions</p>
             </div>
             <div class="header-actions">
+                <button class="btn btn-secondary" onclick="showGitHubSettings()">⚙️ GitHub Settings</button>
                 <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
                 <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
             </div>
         </div>
     </header>
+    
+    <!-- GitHub Settings Modal -->
+    <div id="githubSettingsModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>⚙️ GitHub Settings</h3>
+                <span class="close" onclick="closeGitHubSettings()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0284c7;">
+                    <p style="margin: 0; color: #0369a1; font-size: 14px;">
+                        <strong>🔐 Why is this needed?</strong><br>
+                        To save instructor comments directly to student files, we need GitHub API access. 
+                        Your token is stored locally in your browser and never sent to any external server.
+                    </p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">
+                        GitHub Personal Access Token (PAT)
+                    </label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+                           style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-family: monospace; font-size: 13px;">
+                    <small style="display: block; margin-top: 8px; color: var(--text-light);">
+                        Create a token at <a href="https://github.com/settings/tokens/new" target="_blank" style="color: var(--primary-blue);">github.com/settings/tokens</a>
+                        <br>Required scope: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">repo</code>
+                    </small>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">
+                        Repository (owner/repo)
+                    </label>
+                    <input type="text" id="githubRepo" value="dayashankar-ai/ai-assignment-grader" 
+                           style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px;">
+                </div>
+                
+                <div id="tokenStatus" style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 15px;"></div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="closeGitHubSettings()">Cancel</button>
+                    <button class="btn btn-primary" onclick="testAndSaveGitHubToken()">💾 Save & Test</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
         <!-- Statistics -->
@@ -1578,20 +1625,219 @@
         }
         
         // Save instructor comments
-        function saveInstructorComments(rollNumber, practicalNumber) {
-            const comments = document.getElementById('instructorComments').value;
+        async function saveInstructorComments(rollNumber, practicalNumber) {
+            const comments = document.getElementById('instructorComments').value.trim();
             
-            // Update in memory
+            if (!comments) {
+                alert('Please enter some comments before saving.');
+                return;
+            }
+            
+            const saveBtn = event.target;
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '⏳ Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                // Get GitHub token
+                const githubToken = localStorage.getItem('github_token');
+                const githubRepo = localStorage.getItem('github_repo') || 'dayashankar-ai/ai-assignment-grader';
+                
+                if (!githubToken) {
+                    const setupNow = confirm('GitHub token not configured. Comments will only be saved locally.\n\nDo you want to set up GitHub integration now to save comments for students to see?');
+                    if (setupNow) {
+                        showGitHubSettings();
+                        saveBtn.textContent = originalText;
+                        saveBtn.disabled = false;
+                        return;
+                    }
+                    // Fall back to localStorage only
+                    saveToLocalStorageOnly(rollNumber, practicalNumber, comments);
+                    saveBtn.textContent = '✅ Saved Locally';
+                    setTimeout(() => {
+                        saveBtn.textContent = originalText;
+                        saveBtn.disabled = false;
+                    }, 2000);
+                    return;
+                }
+                
+                // Load existing JSON from GitHub
+                const filePath = `results/details/${rollNumber}_practical_${practicalNumber}.json`;
+                const apiUrl = `https://api.github.com/repos/${githubRepo}/contents/${filePath}`;
+                
+                // Get current file
+                const getResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!getResponse.ok) {
+                    throw new Error(`File not found or access denied (${getResponse.status})`);
+                }
+                
+                const fileData = await getResponse.json();
+                const content = JSON.parse(atob(fileData.content));
+                
+                // Update with instructor comments
+                content.instructorComments = comments;
+                content.lastModified = new Date().toISOString();
+                content.modifiedBy = 'Instructor';
+                
+                // Save back to GitHub
+                const updateResponse = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Update instructor comments for ${rollNumber} - Practical ${practicalNumber}`,
+                        content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+                        sha: fileData.sha,
+                        branch: 'main'
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    const error = await updateResponse.json();
+                    throw new Error(error.message || 'Failed to save to GitHub');
+                }
+                
+                // Also save to localStorage as backup
+                saveToLocalStorageOnly(rollNumber, practicalNumber, comments);
+                
+                // Update in-memory data
+                const submission = allSubmissions.find(s => s.rollNumber === rollNumber && s.practicalNumber === practicalNumber);
+                if (submission) {
+                    submission.instructorComments = comments;
+                }
+                
+                saveBtn.textContent = '✅ Saved to GitHub!';
+                setTimeout(() => {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                }, 3000);
+                
+                // Show success message
+                showNotification('Success! Comments saved and will be visible to the student.', 'success');
+                
+            } catch (error) {
+                console.error('Error saving comments:', error);
+                saveBtn.textContent = '❌ Error';
+                setTimeout(() => {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                }, 2000);
+                
+                const fallback = confirm(`Failed to save to GitHub: ${error.message}\n\nSave locally instead?`);
+                if (fallback) {
+                    saveToLocalStorageOnly(rollNumber, practicalNumber, comments);
+                    showNotification('Comments saved locally only. Students won\'t see them until you configure GitHub.', 'warning');
+                }
+            }
+        }
+        
+        function saveToLocalStorageOnly(rollNumber, practicalNumber, comments) {
+            const key = `instructor_comments_${rollNumber}_${practicalNumber}`;
+            localStorage.setItem(key, comments);
+            
+            // Update in-memory
             const submission = allSubmissions.find(s => s.rollNumber === rollNumber && s.practicalNumber === practicalNumber);
             if (submission) {
                 submission.instructorComments = comments;
             }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#ef4444'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                max-width: 400px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
             
-            // Save to localStorage for persistence
-            const key = `instructor_comments_${rollNumber}_${practicalNumber}`;
-            localStorage.setItem(key, comments);
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+        
+        // GitHub Settings Functions
+        function showGitHubSettings() {
+            const modal = document.getElementById('githubSettingsModal');
+            modal.classList.add('active');
             
-            alert('Comments saved successfully!');
+            // Load existing token (masked)
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                document.getElementById('githubToken').value = token;
+            }
+            
+            const repo = localStorage.getItem('github_repo') || 'dayashankar-ai/ai-assignment-grader';
+            document.getElementById('githubRepo').value = repo;
+        }
+        
+        function closeGitHubSettings() {
+            document.getElementById('githubSettingsModal').classList.remove('active');
+        }
+        
+        async function testAndSaveGitHubToken() {
+            const token = document.getElementById('githubToken').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const statusDiv = document.getElementById('tokenStatus');
+            
+            if (!token || !repo) {
+                statusDiv.innerHTML = '<p style="color: #ef4444; margin: 0;">⚠️ Please enter both token and repository.</p>';
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fee2e2';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<p style="color: #3b82f6; margin: 0;">⏳ Testing GitHub API access...</p>';
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#dbeafe';
+            
+            try {
+                // Test API access
+                const response = await fetch(`https://api.github.com/repos/${repo}`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Access denied or repository not found (${response.status})`);
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('github_token', token);
+                localStorage.setItem('github_repo', repo);
+                
+                statusDiv.innerHTML = '<p style="color: #10b981; margin: 0;">✅ GitHub access verified! Token saved securely in your browser.</p>';
+                statusDiv.style.background = '#d1fae5';
+                
+                setTimeout(() => {
+                    closeGitHubSettings();
+                }, 2000);
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<p style="color: #ef4444; margin: 0;">❌ Error: ${error.message}<br><small>Make sure the token has 'repo' scope and the repository name is correct.</small></p>`;
+                statusDiv.style.background = '#fee2e2';
+            }
         }
 
         function closeModal() {
