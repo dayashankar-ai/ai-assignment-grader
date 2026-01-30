@@ -1,0 +1,15 @@
+STUDENT_NAME: Sanity Check
+STUDENT_ID: 2024SANITY01
+EMAIL: sanity.check@test.edu
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Prompt Engineering
+
+Testing workflow.
+
+```python
+prompt = "Test"
+```
+
+Done.
