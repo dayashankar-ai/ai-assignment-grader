@@ -17,20 +17,30 @@ function extractStudentInfo(text) {
     practical: ''
   };
   
-  const lines = text.split('\n').slice(0, 20);
+  // FIXED: Only check first 10 lines (header section) to avoid matching content in assignment body
+  const lines = text.split('\n').slice(0, 10);
   
   for (const line of lines) {
-    const upper = line.toUpperCase();
-    if (upper.includes('STUDENT_NAME:') || upper.includes('NAME:')) {
-      info.studentName = line.split(':')[1].trim();
-    } else if (upper.includes('STUDENT_ID:') || upper.includes('ID:')) {
-      info.studentId = line.split(':')[1].trim();
-    } else if (upper.includes('STUDENT_EMAIL:') || upper.includes('EMAIL:')) {
-      info.studentEmail = line.split(':')[1].trim();
-    } else if (upper.includes('BATCH:')) {
-      info.batch = line.split(':')[1].trim();
-    } else if (upper.includes('PRACTICAL:')) {
-      info.practical = line.split(':')[1].trim();
+    const trimmedLine = line.trim();
+    
+    // FIXED: Use strict regex that matches ONLY at start of line
+    // This prevents matching "- Name: John Smith" from assignment content
+    const studentNameMatch = trimmedLine.match(/^STUDENT[_\s]?NAME\s*:\s*(.+)$/i);
+    const studentIdMatch = trimmedLine.match(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/i);
+    const studentEmailMatch = trimmedLine.match(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/i);
+    const batchMatch = trimmedLine.match(/^BATCH\s*:\s*(.+)$/i);
+    const practicalMatch = trimmedLine.match(/^(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(.+)$/i);
+    
+    if (studentNameMatch && !info.studentName) {
+      info.studentName = studentNameMatch[1].trim();
+    } else if (studentIdMatch && !info.studentId) {
+      info.studentId = studentIdMatch[1].trim();
+    } else if (studentEmailMatch && !info.studentEmail) {
+      info.studentEmail = studentEmailMatch[1].trim();
+    } else if (batchMatch && !info.batch) {
+      info.batch = batchMatch[1].trim();
+    } else if (practicalMatch && !info.practical) {
+      info.practical = practicalMatch[1].trim();
     }
   }
   

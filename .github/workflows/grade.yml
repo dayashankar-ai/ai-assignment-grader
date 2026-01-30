@@ -195,16 +195,33 @@ jobs:
                 console.log('Files in submissions/ directory:', filesInDir);
               }
               
-              const submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
-              console.log('Submission files found:', submissionFiles);
+              let submissionFiles = allFiles.filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
+              console.log('Submission files found in commits:', submissionFiles);
               
+              // FIXED: If no files in commits, check head_commit for the specific changed file
+              if (submissionFiles.length === 0 && context.payload.head_commit) {
+                console.log('Checking head_commit for files...');
+                const headAdded = context.payload.head_commit.added || [];
+                const headModified = context.payload.head_commit.modified || [];
+                submissionFiles = [...headAdded, ...headModified].filter(f => f.startsWith('submissions/') && f.endsWith('.txt'));
+                console.log('Files from head_commit:', submissionFiles);
+              }
+              
+              // FIXED: Use file modification time to find truly newest file, not alphabetical order
               if (submissionFiles.length === 0) {
-                console.log('No submission files found in commits. Checking directory...');
-                // Fallback: check directory directly for newest file
+                console.log('No submission files found in commits. Checking directory by modification time...');
                 if (filesInDir.length > 0) {
-                  const latestFile = filesInDir[filesInDir.length - 1]; // Get last file
-                  submissionFiles.push(`submissions/${latestFile}`);
-                  console.log('Using latest file from directory:', latestFile);
+                  // Get file stats and sort by modification time (newest first)
+                  const fileStats = filesInDir.map(f => {
+                    const fullPath = path.join(submissionsDir, f);
+                    const stats = fs.statSync(fullPath);
+                    return { name: f, mtime: stats.mtime };
+                  });
+                  fileStats.sort((a, b) => b.mtime - a.mtime); // Sort descending (newest first)
+                  
+                  const newestFile = fileStats[0].name;
+                  submissionFiles.push(`submissions/${newestFile}`);
+                  console.log('Using newest file by modification time:', newestFile);
                 } else {
                   console.log('No submission files found in submissions/ folder');
                   core.setOutput('is_submission', 'false');
@@ -214,6 +231,7 @@ jobs:
               
               // Use first submission file
               const filePath = submissionFiles[0];
+              console.log('Processing file:', filePath);
               const content = fs.readFileSync(filePath, 'utf-8');
               
               // Extract metadata from file content (preferred) or filename
