@@ -23,13 +23,12 @@ function extractStudentInfo(text) {
   for (const line of lines) {
     const trimmedLine = line.trim();
     
-    // FIXED: Use strict regex that matches ONLY at start of line
-    // This prevents matching "- Name: John Smith" from assignment content
-    const studentNameMatch = trimmedLine.match(/^STUDENT[_\s]?NAME\s*:\s*(.+)$/i);
-    const studentIdMatch = trimmedLine.match(/^(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/i);
-    const studentEmailMatch = trimmedLine.match(/^(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/i);
-    const batchMatch = trimmedLine.match(/^BATCH\s*:\s*(.+)$/i);
-    const practicalMatch = trimmedLine.match(/^(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM))?\s*:\s*(.+)$/i);
+    // FIXED: Handle comment characters (// or /* or *) at line start, then match metadata
+    const studentNameMatch = trimmedLine.match(/^(?:\/\/|\*|\/\*)?\s*STUDENT[_\s]?NAME\s*:\s*(.+)$/i);
+    const studentIdMatch = trimmedLine.match(/^(?:\/\/|\*|\/\*)?\s*(?:STUDENT[_\s]?ID|ROLL[_\s]?(?:NUMBER|NO|NUM)?)\s*:\s*(.+)$/i);
+    const studentEmailMatch = trimmedLine.match(/^(?:\/\/|\*|\/\*)?\s*(?:STUDENT[_\s]?EMAIL|EMAIL)\s*:\s*(.+)$/i);
+    const batchMatch = trimmedLine.match(/^(?:\/\/|\*|\/\*)?\s*BATCH\s*:\s*(.+)$/i);
+    const practicalMatch = trimmedLine.match(/^(?:\/\/|\*|\/\*)?\s*(?:PRACTICAL|ASSIGNMENT)(?:\s*(?:NUMBER|NO|NUM)?)?\s*:\s*(.+)$/i);
     
     if (studentNameMatch && !info.studentName) {
       info.studentName = studentNameMatch[1].trim();
