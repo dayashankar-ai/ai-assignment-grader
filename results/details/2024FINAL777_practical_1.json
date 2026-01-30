@@ -1,0 +1,19 @@
+{
+  "totalScore": 0,
+  "baseScore": 0,
+  "finalScore": 0,
+  "gradeLetter": "F",
+  "overallFeedback": "Grading result file not found",
+  "criteria": [],
+  "strengths": [],
+  "improvements": [],
+  "studentName": "Final Verification",
+  "rollNumber": "2024FINAL777",
+  "email": "final.verify@test.edu",
+  "batch": "2024",
+  "practicalNumber": "1",
+  "timestamp": "2026-01-30T11:26:32.513Z",
+  "aiUsagePercent": 0,
+  "submissionText": "// STUDENT NAME: Final Verification\n// ROLL NUMBER: 2024FINAL777\n// EMAIL: final.verify@test.edu\n// BATCH: 2024\n// YEAR: III\n// PRACTICAL NUMBER: 1\n\n/**\n * Calculator Class Implementation\n * Practical Assignment 1\n */\n\nclass Calculator {\n    constructor() {\n        this.memory = 0;\n        this.history = [];\n    }\n    \n    add(a, b) {\n        const result = Number(a) + Number(b);\n        this.history.push(`${a} + ${b} = ${result}`);\n        return result;\n    }\n    \n    subtract(a, b) {\n        const result = Number(a) - Number(b);\n        this.history.push(`${a} - ${b} = ${result}`);\n        return result;\n    }\n    \n    multiply(a, b) {\n        const result = Number(a) * Number(b);\n        this.history.push(`${a} × ${b} = ${result}`);\n        return result;\n    }\n    \n    divide(a, b) {\n        if (Number(b) === 0) {\n            throw new Error(\"Cannot divide by zero\");\n        }\n        const result = Number(a) / Number(b);\n        this.history.push(`${a} ÷ ${b} = ${result}`);\n        return result;\n    }\n    \n    power(base, exponent) {\n        const result = Math.pow(Number(base), Number(exponent));\n        return result;\n    }\n    \n    squareRoot(n) {\n        if (Number(n) < 0) {\n            throw new Error(\"Cannot calculate square root of negative number\");\n        }\n        return Math.sqrt(Number(n));\n    }\n    \n    getHistory() {\n        return this.history;\n    }\n    \n    clearHistory() {\n        this.history = [];\n    }\n}\n\n// Test the calculator\nconst calc = new Calculator();\nconsole.log(calc.add(10, 5));      // 15\nconsole.log(calc.subtract(10, 3)); // 7\nconsole.log(calc.multiply(4, 5));  // 20\nconsole.log(calc.divide(20, 4));   // 5\nconsole.log(calc.power(2, 3));     // 8\nconsole.log(calc.squareRoot(16));  // 4\n\nmodule.exports = Calculator;\n",
+  "instructorComments": ""
+}
