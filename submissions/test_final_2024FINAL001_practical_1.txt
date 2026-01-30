@@ -1,0 +1,26 @@
+STUDENT_NAME: Test Final
+STUDENT_ID: 2024FINAL001
+EMAIL: test.final@university.edu
+BATCH: 2024
+PRACTICAL: 1
+
+# Practical 1: Prompt Engineering
+
+## Overview
+Basic prompt engineering exploration.
+
+## Task 1: Simple Prompt
+```python
+prompt = "Hello, how are you?"
+```
+
+## Task 2: Better Prompt
+```python
+better_prompt = """
+You are a helpful assistant.
+Please greet the user politely.
+"""
+```
+
+## Conclusion
+Prompt engineering is interesting.
